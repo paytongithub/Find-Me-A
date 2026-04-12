@@ -1,8 +1,10 @@
 using System.Text.Json;
 using System.Linq;
 using Microsoft.Data.SqlClient;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
+DotNetEnv.Env.Load();
 var app = builder.Build();
 
 string connectionString = "Server=tcp:147.126.2.58,1433;Database=Find_Me_A;User ID=pmensah1;Password=p70853;Encrypt=True;TrustServerCertificate=True;";
