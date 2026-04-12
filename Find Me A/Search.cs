@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using static System.Net.WebRequestMethods;
 
 namespace Find_Me_A
@@ -212,22 +213,27 @@ namespace Find_Me_A
         }
 
         // switch for any of the methods
-        public void SearchQuery(string SearchBy, string Data)
+        //public object SearchQuery(string SearchBy, string Data)//
+        public async Task<object> SearchQuery(string SearchBy, string Data)
         {
             switch (SearchBy)
             {
                 case "Title":
-                    SearchByTitle(Data);
-                    break;
+                    return SearchByTitle(Data);
                 case "Genre":
-                    SearchByGenre(Data);
-                    break;
+                    return SearchByGenre(Data);
                 case "Actor":
-                    SearchByActor(Data);
-                    break;
+                    return SearchByActor(Data);
+                case "TMDB":
+                    return await SearchFromTMDB(Data);
+                case "All":
+                    var dbResults = SearchByTitle(Data);
+                    var apiResults = await SearchFromTMDB(Data);
+                    return new { dbResults, apiResults };
                 default:
-                    Console.WriteLine("Invalid search criteria.");
-                    break;
+                    //Console.WriteLine("Invalid search criteria.");
+                    //break;
+                    return null;
             }
         }
 
@@ -247,5 +253,12 @@ namespace Find_Me_A
                     break;
             }
         }
+
+        public async Task<string> SearchFromTMDB(string query)
+        {
+            var tmdb = new TMDB();
+            return await tmdb.SearchMovies(query);
+        }
+
     }
 }
