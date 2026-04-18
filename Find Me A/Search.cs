@@ -78,7 +78,9 @@ namespace Find_Me_A
 
             return ExecuteTitleQuery(sql, new SqlParameter("@TitleName", titleName));
         }
+// It's probably smarter just to have a single search method that takes in the genre/actor name in as a string[] of any size, instead of overload
 
+/* 
         public List<Title> SearchByGenre(string genreName)
         {
             string sql = @"
@@ -132,7 +134,7 @@ namespace Find_Me_A
 
             return ExecuteTitleQuery(sql, new SqlParameter("@ActorName", actorName));
         }
-
+*/
         // overload method for multiple genres 
         public List<Title> SearchByGenre(string[] genreNames)
         {
@@ -214,21 +216,30 @@ namespace Find_Me_A
 
         // switch for any of the methods
         //public object SearchQuery(string SearchBy, string Data)//
-        public async Task<object> SearchQuery(string SearchBy, string Data)
+        public async Task<object> SearchQuery(string SearchBy, string[] Data)
         {
             switch (SearchBy)
             {
+                // unplugging searches from the database, as API is in now
+                /* 
                 case "Title":
                     return SearchByTitle(Data);
                 case "Genre":
                     return SearchByGenre(Data);
                 case "Actor":
                     return SearchByActor(Data);
+                */
                 case "TMDB":
-                    return await SearchFromTMDB(Data);
+                    return await SearchFromTMDB((Data != null && Data.Length > 0) ? Data[0] : string.Empty);
+                case "TMDBTitle":
+                    return await SearchByTitleTMDB((Data != null && Data.Length > 0) ? Data[0] : string.Empty);
+                case "TMDBActor":
+                    return await SearchByActorTMDB(Data ?? Array.Empty<string>());
+                case "TMDBGenre":
+                    return await SearchByGenreTMDB(Data ?? Array.Empty<string>());
                 case "All":
-                    var dbResults = SearchByTitle(Data);
-                    var apiResults = await SearchFromTMDB(Data);
+                    var dbResults = (Data != null && Data.Length > 0) ? SearchByTitle(Data[0]) : new List<Title>();
+                    var apiResults = await SearchFromTMDB((Data != null && Data.Length > 0) ? Data[0] : string.Empty);
                     return new { dbResults, apiResults };
                 default:
                     //Console.WriteLine("Invalid search criteria.");
@@ -237,28 +248,29 @@ namespace Find_Me_A
             }
         }
 
-        // overload method for searchquery switch to work with array data
-        public void SearchQuery(string SearchBy, string[] Data)
-        {
-            switch (SearchBy)
-            {
-                case "Genre":
-                    SearchByGenre(Data);
-                    break;
-                case "Actor":
-                    SearchByActor(Data);
-                    break;
-                default:
-                    Console.WriteLine("Invalid search criteria.");
-                    break;
-            }
-        }
-
         public async Task<string> SearchFromTMDB(string query)
         {
             var tmdb = new TMDB();
             return await tmdb.SearchMovies(query);
         }
+
+        public async Task<string> SearchByTitleTMDB(string title)
+        {
+            return await SearchFromTMDB(title);
+        }
+
+        public async Task<string> SearchByActorTMDB(string[] actorNames)
+        {
+            var tmdb = new TMDB();
+            return await tmdb.DiscoverByActor(actorNames);
+        }
+
+        public async Task<string> SearchByGenreTMDB(string[] genreNames)
+        {
+            var tmdb = new TMDB();
+            return await tmdb.DiscoverByGenre(genreNames);
+        }
+
 
     }
 }
