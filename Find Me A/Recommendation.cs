@@ -94,31 +94,31 @@ namespace Find_Me_A
                             var actorsRaw = reader["ActorIds"] == DBNull.Value ? string.Empty : reader["ActorIds"].ToString() ?? string.Empty;
                             var genresRaw = reader["GenreIds"] == DBNull.Value ? string.Empty : reader["GenreIds"].ToString() ?? string.Empty;
 
-                    var detail = new WatchedDetail
-                    {
-                        TitleName = reader["TitleName"]?.ToString() ?? string.Empty,
-                        ReleaseDate = reader["ReleaseDate"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["ReleaseDate"]),
-                        ActorIds = string.IsNullOrWhiteSpace(actorsRaw) ? new List<int>() : ParseIdList(actorsRaw),
-                        GenreIds = string.IsNullOrWhiteSpace(genresRaw) ? new List<int>() : ParseIdList(genresRaw),
-                        UserRating = reader["UserRating"] == DBNull.Value ? (int?)null : Convert.ToInt32(reader["UserRating"]),
-                        WatchedDate = reader["WatchedDate"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["WatchedDate"]),
-                        CollectionIDs = new List<int>()
-                    };
+                            var detail = new WatchedDetail
+                            {
+                                TitleName = reader["TitleName"]?.ToString() ?? string.Empty,
+                                ReleaseDate = reader["ReleaseDate"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["ReleaseDate"]),
+                                ActorIds = string.IsNullOrWhiteSpace(actorsRaw) ? new List<int>() : ParseIdList(actorsRaw),
+                                GenreIds = string.IsNullOrWhiteSpace(genresRaw) ? new List<int>() : ParseIdList(genresRaw),
+                                UserRating = reader["UserRating"] == DBNull.Value ? (int?)null : Convert.ToInt32(reader["UserRating"]),
+                                WatchedDate = reader["WatchedDate"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(reader["WatchedDate"]),
+                                CollectionIDs = new List<int>()
+                            };
 
-                    // fetch collection id from TMDB on demand (do not store in DB)
-                    try
-                    {
-                        var tmdb = new TMDB();
-                        var tmdbTitle = tmdb.GetTitleByName(detail.TitleName).GetAwaiter().GetResult();
-                        if (tmdbTitle != null && tmdbTitle.CollectionID.HasValue)
-                        {
-                            detail.CollectionIDs.Add(tmdbTitle.CollectionID.Value);
-                        }
-                    }
-                    catch
-                    {
-                        // ignore TMDB failures; leave CollectionIDs empty
-                    }
+                            // fetch collection id from TMDB on demand (do not store in DB)
+                            try
+                            {
+                                var tmdb = new TMDB();
+                                var collId = tmdb.GetCollectionIdByName(detail.TitleName).GetAwaiter().GetResult();
+                                if (collId.HasValue)
+                                {
+                                    detail.CollectionIDs.Add(collId.Value);
+                                }
+                            }
+                            catch
+                            {
+                                // ignore TMDB failures; leave CollectionIDs empty
+                            }
 
                             // Ensure limits (defensive)
                             if (detail.ActorIds.Count > 20) detail.ActorIds = detail.ActorIds.GetRange(0, 20);
@@ -147,7 +147,7 @@ namespace Find_Me_A
         }
 
         // returns a list of each actor's id and the scores for titles with the actor rated by the user
-        public static List<ActorDetail> GetActorDetails (List<WatchedDetail> watchedDetails)
+        public static List<ActorDetail> GetActorDetails(List<WatchedDetail> watchedDetails)
         {
             var result = new List<ActorDetail>();
 
@@ -225,7 +225,7 @@ namespace Find_Me_A
             }
             return result;
         }
-        
+
         /* Logic for recommendation algorithm 
          * We want to generate a score for each actor and genre, based on the following logic
          * The rating the user gave the title with the actor/genre should be the basis for the score
