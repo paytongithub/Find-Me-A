@@ -1,0 +1,38 @@
+﻿@page
+@model FindMeA.Frontend.Pages.WatchlistPageModel
+@{
+    ViewData["Title"] = "Your Watchlist";
+}
+
+<div class="container mt-5">
+    <h2 class="mb-4">Your Watchlist</h2>
+
+    @if (Model.Items == null || !Model.Items.Any())
+    {
+        <p>You don't have anything in your watchlist yet.</p>
+    }
+    else
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Release Date</th>
+                    <th>Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.Title.TitleName</td>
+                        <td>@item.Title.TitleType</td>
+                        <td>@item.Title.ReleaseDate.ToShortDateString()</td>
+                        <td>@item.Title.AverageRating</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

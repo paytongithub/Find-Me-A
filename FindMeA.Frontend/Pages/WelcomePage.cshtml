@@ -1,0 +1,21 @@
+﻿@page
+@model FindMeA.Frontend.Pages.WelcomePageModel
+@{
+    ViewData["Title"] = "Welcome";
+}
+
+<div class="container text-center mt-5">
+
+    <h1 class="display-3 fw-bold mb-3">Welcome to Find Me A 🎬</h1>
+    <p class="lead mb-4">
+        Discover movies, track what you've watched, and explore personalized recommendations.
+    </p>
+
+    <hr class="my-4" />
+
+    <div class="mt-4 d-flex flex-column align-items-center" style="gap: 15px; max-width: 300px; margin: 0 auto;">
+        <a class="btn btn-primary btn-lg w-100" asp-page="/SignUpPage">Sign Up</a>
+        <a class="btn btn-secondary btn-lg w-100" asp-page="/LogInPage">Log In</a>
+        <a class="btn btn-outline-dark btn-lg w-100" asp-page="/HomePage">Continue as Guest</a>
+    </div>
+</div> 
