@@ -12,9 +12,9 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using FindMeA_.Views;
+using Find_Me_A.Views;
 
-namespace FindMeA_
+namespace Find_Me_A
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
