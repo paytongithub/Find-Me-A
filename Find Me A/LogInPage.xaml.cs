@@ -1,4 +1,4 @@
-﻿using FindMeA_.Views;
+﻿using Find_Me_A.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace FindMeA_
+namespace Find_Me_A
 {
     /// <summary>
     /// Interaction logic for LogInPage.xaml
