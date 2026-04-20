@@ -1,0 +1,66 @@
+﻿<Page x:Class="FindMeA_.LogInPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:FindMeA_"
+      mc:Ignorable="d" 
+      d:DesignHeight="800" d:DesignWidth="450"
+      Title="LogInPage">
+
+    <Page.Resources>
+        <SolidColorBrush x:Key="GoldBrush" Color="#C5A85C"/>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="30">
+
+            <TextBlock Text="Log In"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="White"
+                       HorizontalAlignment="Center"
+                       Margin="0 20 0 30"/>
+
+            <!-- Email -->
+            <TextBlock Text="Email" Foreground="White" FontSize="16"/>
+            <TextBox x:Name="EmailBox"
+                     Background="#1E1E1E"
+                     Foreground="White"
+                     BorderBrush="{StaticResource GoldBrush}"
+                     Padding="10"
+                     Margin="0 5 0 20"/>
+
+            <!-- Password -->
+            <TextBlock Text="Password" Foreground="White" FontSize="16"/>
+            <PasswordBox x:Name="PasswordBox"
+                         Background="#1E1E1E"
+                         Foreground="White"
+                         BorderBrush="{StaticResource GoldBrush}"
+                         Padding="10"
+                         Margin="0 5 0 30"/>
+
+            <!-- Log In Button -->
+            <Button Content="Log In"
+                    Width="200"
+                    Height="50"
+                    Background="{StaticResource GoldBrush}"
+                    Foreground="#3E3A39"
+                    FontSize="18"
+                    FontWeight="Bold"
+                    BorderThickness="0"
+                    HorizontalAlignment="Center"
+                    Click="LogInSubmit_Click"/>
+
+            <!-- Create Account -->
+            <Button Content="Don't have an account? Sign Up"
+                    Background="Transparent"
+                    Foreground="White"
+                    BorderThickness="0"
+                    Margin="0 20 0 0"
+                    HorizontalAlignment="Center"
+                    Click="GoToSignUp_Click"/>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>
