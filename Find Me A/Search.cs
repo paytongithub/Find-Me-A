@@ -134,7 +134,7 @@ namespace Find_Me_A
 
             return ExecuteTitleQuery(sql, new SqlParameter("@ActorName", actorName));
         }
-*/
+
         // overload method for multiple genres 
         public List<Title> SearchByGenre(string[] genreNames)
         {
@@ -213,7 +213,7 @@ namespace Find_Me_A
 
             return ExecuteTitleQuery(sql, parameters.ToArray());
         }
-
+        */
         // switch for any of the methods
         //public object SearchQuery(string SearchBy, string Data)//
         public async Task<object> SearchQuery(string SearchBy, string[] Data)
