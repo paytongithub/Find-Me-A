@@ -146,13 +146,73 @@ public class TMDB
                         if (p.TryGetProperty("name", out var pname))
                         {
                             title.Actors.Add(pname.GetString() ?? string.Empty);
-                           // added++;
-                           // if (added >= 5) break;
+                            // added++;
+                            // if (added >= 5) break;
                         }
                     }
                 }
 
                 return title;
+            }
+        }
+
+        return null;
+    }
+
+    // Fetch the TMDB collection ID for a title by name (returns null if none found)
+    public async Task<int?> GetCollectionIdByName(string titleName)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
+
+        if (string.IsNullOrWhiteSpace(titleName))
+            return null;
+
+        var encoded = Uri.EscapeDataString(titleName);
+
+        // Try movie search first
+        var movieSearchUrl = $"{baseUrl}/search/movie?api_key={apiKey}&query={encoded}";
+        var movieSearchJson = await client.GetStringAsync(movieSearchUrl);
+        using (var doc = JsonDocument.Parse(movieSearchJson))
+        {
+            var root = doc.RootElement;
+            if (root.TryGetProperty("results", out var results) && results.GetArrayLength() > 0)
+            {
+                var first = results[0];
+                var id = first.GetProperty("id").GetInt32();
+                var detailsUrl = $"{baseUrl}/movie/{id}?api_key={apiKey}&language=en-US";
+                var detailsJson = await client.GetStringAsync(detailsUrl);
+                using var ddoc = JsonDocument.Parse(detailsJson);
+                var droot = ddoc.RootElement;
+                if (droot.TryGetProperty("belongs_to_collection", out var coll) && coll.ValueKind != JsonValueKind.Null)
+                {
+                    if (coll.TryGetProperty("id", out var cid))
+                        return cid.GetInt32();
+                }
+                return null;
+            }
+        }
+
+        // Try TV search (collections typically don't apply to TV, but keep for completeness)
+        var tvSearchUrl = $"{baseUrl}/search/tv?api_key={apiKey}&query={encoded}";
+        var tvSearchJson = await client.GetStringAsync(tvSearchUrl);
+        using (var doc2 = JsonDocument.Parse(tvSearchJson))
+        {
+            var root2 = doc2.RootElement;
+            if (root2.TryGetProperty("results", out var results2) && results2.GetArrayLength() > 0)
+            {
+                var first = results2[0];
+                var id = first.GetProperty("id").GetInt32();
+                var detailsUrl = $"{baseUrl}/tv/{id}?api_key={apiKey}&language=en-US";
+                var detailsJson = await client.GetStringAsync(detailsUrl);
+                using var ddoc = JsonDocument.Parse(detailsJson);
+                var droot = ddoc.RootElement;
+                if (droot.TryGetProperty("belongs_to_collection", out var coll) && coll.ValueKind != JsonValueKind.Null)
+                {
+                    if (coll.TryGetProperty("id", out var cid))
+                        return cid.GetInt32();
+                }
+                return null;
             }
         }
 
