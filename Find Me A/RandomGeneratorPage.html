@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Find Me A – Random</title>
+    <link rel="stylesheet" href="RandomGenerator.css">
+</head>
+
+<body class="rg-body">
+
+    <header class="rg-header">
+        <h1 class="rg-logo">Find Me A</h1>
+        <div class="rg-search-bar">
+            <input type="text" class="rg-search-input" placeholder="Search movies, shows, genres...">
+            <button class="rg-search-btn">Search</button>
+        </div>
+    </header>
+
+    <main class="rg-main">
+        <h2 class="rg-title">Find Me A...</h2>
+
+        <div class="rg-type-toggle">
+            <button class="rg-type-btn active">Movie</button>
+            <button class="rg-type-btn">TV Show</button>
+        </div>
+
+        <div class="rg-filters">
+            <div class="rg-filter">
+                <label>Genre</label>
+                <select>
+                    <option>All</option>
+                    <option>Action</option>
+                    <option>Comedy</option>
+                    <option>Drama</option>
+                    <option>Horror</option>
+                </select>
+            </div>
+
+            <div class="rg-filter">
+                <label>Sub-Genre</label>
+                <select>
+                    <option>All</option>
+                    <option>Rom-Com</option>
+                    <option>Thriller</option>
+                    <option>Sci-Fi</option>
+                </select>
+            </div>
+
+            <div class="rg-filter">
+                <label>Year</label>
+                <select>
+                    <option>All</option>
+                    <option>2020s</option>
+                    <option>2010s</option>
+                    <option>2000s</option>
+                    <option>90s</option>
+                </select>
+            </div>
+
+            <div class="rg-filter">
+                <label>Streaming Provider</label>
+                <select>
+                    <option>All</option>
+                    <option>Netflix</option>
+                    <option>Hulu</option>
+                    <option>Prime Video</option>
+                    <option>Disney+</option>
+                </select>
+            </div>
+
+            <div class="rg-filter">
+                <label>Rating</label>
+                <select>
+                    <option>All</option>
+                    <option>G</option>
+                    <option>PG</option>
+                    <option>PG-13</option>
+                    <option>R</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="rg-random-btn" onclick="randomize()">Randomize</button>
+
+        <p id="rg-result" class="rg-result"></p>
+    </main>
+
+    <nav class="rg-bottom-nav">
+        <a href="HomePage.html">Home</a>
+        <a href="SearchPage.html">Search</a>
+        <a href="WatchlistPage.html">Watchlist</a>
+        <a href="#">Reviews</a>
+        <a href="#">Profile</a>
+    </nav>
+
+    <script>function randomize() {
+            // Placeholder for now – later this will call your API
+            document.getElementById("rg-result").textContent =
+                "random pick will appear here once the API is connected.";
+        }
+    </script>
+
+</body>
+</html>

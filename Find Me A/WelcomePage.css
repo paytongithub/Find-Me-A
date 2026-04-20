@@ -1,0 +1,98 @@
+﻿/* Welcome Page Styling */
+.welcome-body {
+    background-color: #0d0d0d;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.welcome-container {
+    text-align: center;
+}
+
+/* Logo Circle */
+.welcome-logo-circle {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 3px solid gold;
+    margin: 0 auto 20px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.logo-inner {
+    width: 90px;
+    height: 90px;
+    background-color: #1a1a1a;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-icon {
+    font-size: 40px;
+    color: gold;
+}
+
+.logo-text {
+    position: absolute;
+    bottom: -28px;
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    color: gold;
+    letter-spacing: 2px;
+}
+
+/* Tagline */
+.welcome-tagline {
+    margin-top: 50px;
+    font-size: 20px;
+    color: #ffb6c1;
+    margin-bottom: 40px;
+}
+
+/* Buttons */
+.welcome-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.welcome-btn {
+    padding: 12px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 18px;
+    display: block;
+    width: 240px;
+    margin: 0 auto;
+    text-align: center;
+    font-weight: bold;
+}
+
+.gold-btn {
+    background-color: gold;
+    color: black;
+}
+
+.black-btn {
+    background-color: black;
+    color: white;
+    border: 2px solid gold;
+}
+
+.guest-link {
+    margin-top: 10px;
+    color: #ffb6c1;
+    text-decoration: none;
+    font-size: 16px;
+}

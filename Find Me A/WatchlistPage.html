@@ -1,0 +1,110 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Find Me A – Watchlist</title>
+    <link rel="stylesheet" href="WatchlistPage.css">
+</head>
+
+<body class="wl-body">
+
+    <header class="wl-header">
+        <h1 class="wl-logo">Find Me A</h1>
+    </header>
+
+    <main class="wl-main">
+
+        <!-- WATCHLIST SECTION -->
+        <section class="wl-section">
+            <h2 class="wl-section-title">Watchlist</h2>
+
+            <div class="wl-carousel-container">
+                <button class="wl-arrow left" onclick="scrollCarousel('watchlist', -300)">❮</button>
+
+                <div class="wl-carousel" id="watchlist">
+                    <!-- API -->
+                </div>
+
+                <button class="wl-arrow right" onclick="scrollCarousel('watchlist', 300)">❯</button>
+            </div>
+        </section>
+
+        <!-- COMING SOON -->
+        <section class="wl-section">
+            <h2 class="wl-section-title">Coming Soon</h2>
+
+            <div class="wl-carousel-container">
+                <button class="wl-arrow left" onclick="scrollCarousel('coming', -300)">❮</button>
+
+                <div class="wl-carousel" id="coming">
+                    <!-- API -->
+                </div>
+
+                <button class="wl-arrow right" onclick="scrollCarousel('coming', 300)">❯</button>
+            </div>
+        </section>
+
+        <!-- RECOMMENDATIONS -->
+        <section class="wl-section">
+            <h2 class="wl-section-title">Because You Added: Stranger Things</h2>
+
+            <div class="wl-carousel-container">
+                <button class="wl-arrow left" onclick="scrollCarousel('recommend', -300)">❮</button>
+
+                <div class="wl-carousel" id="recommend">
+                    <!-- API -->
+                </div>
+
+                <button class="wl-arrow right" onclick="scrollCarousel('recommend', 300)">❯</button>
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="wl-bottom-nav">
+        <a href="HomePage.html">Home</a>
+        <a href="SearchPage.html">Search</a>
+        <a href="WatchlistPage.html" class="active">Watchlist</a>
+        <a href="#">Reviews</a>
+        <a href="#">Profile</a>
+    </nav>
+
+    <script>// Mock data for now
+        const watchlistData = [
+            "https://via.placeholder.com/150x220?text=The+Recruit",
+            "https://via.placeholder.com/150x220?text=Hudson+%26+Rex",
+            "https://via.placeholder.com/150x220?text=Cabin+10"
+        ];
+
+        const comingData = [
+            "https://via.placeholder.com/150x220?text=The+Last+of+Us",
+            "https://via.placeholder.com/150x220?text=Wednesday",
+            "https://via.placeholder.com/150x220?text=Ginny+%26+Georgia"
+        ];
+
+        const recommendData = [
+            "https://via.placeholder.com/150x220?text=Locke+%26+Key",
+            "https://via.placeholder.com/150x220?text=Mayfair+Witches",
+            "https://via.placeholder.com/150x220?text=Hill+House"
+        ];
+
+        function loadCarousel(id, data) {
+            const container = document.getElementById(id);
+            data.forEach(src => {
+                const img = document.createElement("img");
+                img.src = src;
+                img.className = "wl-poster";
+                container.appendChild(img);
+            });
+        }
+
+        function scrollCarousel(id, amount) {
+            document.getElementById(id).scrollBy({ left: amount, behavior: "smooth" });
+        }
+
+        loadCarousel("watchlist", watchlistData);
+        loadCarousel("coming", comingData);
+        loadCarousel("recommend", recommendData);</script>
+
+</body>
+</html>

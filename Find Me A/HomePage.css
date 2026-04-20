@@ -1,0 +1,90 @@
+﻿body {
+    background-color: #0d0d0d;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding-bottom: 80px; /* space for bottom nav */
+}
+
+/* Header */
+.header {
+    padding: 20px;
+    text-align: center;
+}
+
+.logo {
+    font-size: 32px;
+    color: gold;
+    margin: 0;
+}
+
+.welcome {
+    margin-top: 5px;
+    color: #ffb6c1;
+}
+
+/* Search Bar */
+.search-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px;
+    gap: 10px;
+}
+
+.search-input {
+    width: 60%;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+}
+
+.search-btn {
+    padding: 10px 20px;
+    background-color: gold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* Sections */
+.section {
+    margin: 30px;
+}
+
+.section-title {
+    font-size: 22px;
+    margin-bottom: 10px;
+    color: gold;
+}
+
+/* Horizontal Carousels */
+.carousel {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.poster {
+    width: 150px;
+    height: 220px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #1a1a1a;
+    display: flex;
+    justify-content: space-around;
+    padding: 15px 0;
+}
+
+    .bottom-nav a {
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+    }

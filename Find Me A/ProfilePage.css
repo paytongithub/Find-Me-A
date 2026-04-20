@@ -1,0 +1,130 @@
+﻿/* Base */
+.pf-body {
+    background-color: #0d0d0d;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding-bottom: 80px;
+}
+
+/* Header */
+.pf-header {
+    padding: 20px;
+    text-align: center;
+}
+
+.pf-logo {
+    color: gold;
+    font-size: 28px;
+    margin: 0;
+}
+
+/* User Section */
+.pf-user-section {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.pf-avatar {
+    width: 120px;
+    height: 120px;
+    background-color: #1a1a1a;
+    border-radius: 50%;
+    margin: 0 auto 10px auto;
+    border: 3px solid gold;
+}
+
+.pf-username {
+    font-size: 24px;
+    margin: 5px 0;
+    color: gold;
+}
+
+.pf-stats {
+    font-size: 14px;
+    margin: 3px 0;
+    color: #e0e0e0;
+}
+
+    .pf-stats.pink {
+        color: #ffb6c1;
+    }
+
+/* Sections */
+.pf-section {
+    margin: 20px;
+}
+
+.pf-section-title {
+    color: gold;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+/* Carousel */
+.pf-carousel-container {
+    position: relative;
+}
+
+.pf-carousel {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 10px;
+}
+
+    .pf-carousel::-webkit-scrollbar {
+        display: none;
+    }
+
+.pf-poster {
+    width: 150px;
+    height: 220px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* Arrows */
+.pf-arrow {
+    position: absolute;
+    top: 40%;
+    transform: translateY(-50%);
+    background-color: rgba(0,0,0,0.6);
+    border: 1px solid gold;
+    color: gold;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+    .pf-arrow.left {
+        left: -5px;
+    }
+
+    .pf-arrow.right {
+        right: -5px;
+    }
+
+/* Bottom Nav */
+.pf-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #1a1a1a;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+}
+
+    .pf-bottom-nav a {
+        color: white;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+        .pf-bottom-nav a.active {
+            color: gold;
+            font-weight: bold;
+        }

@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Find Me A – Review</title>
+    <link rel="stylesheet" href="ReviewPage.css">
+</head>
+
+<body class="rv-body">
+
+    <header class="rv-header">
+        <button class="rv-back-btn" onclick="history.back()">❮ Back</button>
+    </header>
+
+    <main class="rv-main">
+
+        <div class="rv-top">
+            <img src="https://via.placeholder.com/200x300?text=Poster" class="rv-poster">
+
+            <div class="rv-info">
+                <h1 class="rv-title">Movie Title</h1>
+                <p class="rv-meta">Comedy • 2011 • PG • 1h 41m</p>
+
+                <p class="rv-description">
+                    This is a placeholder description. When the API is ready, this will show the movie’s summary.
+                </p>
+
+                <p class="rv-credits"><strong>Director:</strong> Oliver Parker</p>
+                <p class="rv-credits"><strong>Writers:</strong> Hamish McColl, William Davies</p>
+                <p class="rv-credits"><strong>Stars:</strong> Actor 1, Actor 2, Actor 3</p>
+            </div>
+        </div>
+
+        <h2 class="rv-section-title">Rate</h2>
+
+        <div class="rv-stars" id="star-container">
+            ★★★★★
+        </div>
+
+        <p class="rv-halfstar">Double tap for half star</p>
+
+        <h2 class="rv-section-title">Write Your Review</h2>
+
+        <textarea class="rv-textbox" placeholder="Please Type Here..."></textarea>
+
+        <div class="rv-buttons">
+            <button class="rv-btn cancel">Cancel</button>
+            <button class="rv-btn submit">Submit</button>
+        </div>
+
+    </main>
+
+    <nav class="rv-bottom-nav">
+        <a href="HomePage.html">Home</a>
+        <a href="SearchPage.html">Search</a>
+        <a href="WatchlistPage.html">Watchlist</a>
+        <a href="ReviewPage.html" class="active">Reviews</a>
+        <a href="#">Profile</a>
+    </nav>
+
+</body>
+</html>

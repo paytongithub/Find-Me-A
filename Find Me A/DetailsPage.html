@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Find Me A – Details</title>
+    <link rel="stylesheet" href="DetailsPage.css">
+</head>
+
+<body class="dt-body">
+
+    <header class="dt-header">
+        <button class="dt-back-btn" onclick="history.back()">❮ Back</button>
+    </header>
+
+    <main class="dt-main">
+
+        <img src="https://via.placeholder.com/300x450?text=Poster" class="dt-poster">
+
+        <h1 class="dt-title">Movie Title</h1>
+        <p class="dt-subinfo">2023 • PG-13 • Action, Sci-Fi</p>
+
+        <button class="dt-watchlist-btn">+ Add to Watchlist</button>
+
+        <p class="dt-summary">
+            This is a placeholder summary. When the API is ready, this will show the movie’s description.
+        </p>
+
+        <h2 class="dt-section-title">Recommended for You</h2>
+
+        <div class="dt-carousel-container">
+            <button class="dt-arrow left" onclick="scrollCarousel(-300)">❮</button>
+
+            <div class="dt-carousel" id="dt-recommend">
+                <!-- JS inserts posters -->
+            </div>
+
+            <button class="dt-arrow right" onclick="scrollCarousel(300)">❯</button>
+        </div>
+
+    </main>
+
+    <nav class="dt-bottom-nav">
+        <a href="HomePage.html">Home</a>
+        <a href="SearchPage.html">Search</a>
+        <a href="WatchlistPage.html">Watchlist</a>
+        <a href="#">Reviews</a>
+        <a href="#">Profile</a>
+    </nav>
+
+    <script>const recData = [
+            "https://via.placeholder.com/150x220?text=Rec+1",
+            "https://via.placeholder.com/150x220?text=Rec+2",
+            "https://via.placeholder.com/150x220?text=Rec+3"
+        ];
+
+        function loadRecs() {
+            const container = document.getElementById("dt-recommend");
+            recData.forEach(src => {
+                const img = document.createElement("img");
+                img.src = src;
+                img.className = "dt-poster-small";
+                container.appendChild(img);
+            });
+        }
+
+        function scrollCarousel(amount) {
+            document.getElementById("dt-recommend").scrollBy({ left: amount, behavior: "smooth" });
+        }
+
+        loadRecs();</script>
+
+</body>
+</html>

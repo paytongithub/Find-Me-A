@@ -1,0 +1,132 @@
+﻿/* Base */
+.rg-body {
+    background-color: #0d0d0d;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding-bottom: 80px;
+}
+
+/* Header */
+.rg-header {
+    padding: 20px;
+}
+
+.rg-logo {
+    color: gold;
+    margin: 0 0 10px 0;
+    font-size: 28px;
+}
+
+.rg-search-bar {
+    display: flex;
+    gap: 10px;
+}
+
+.rg-search-input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+}
+
+.rg-search-btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    background-color: gold;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* Main */
+.rg-main {
+    padding: 20px;
+}
+
+.rg-title {
+    font-size: 22px;
+    margin-bottom: 15px;
+}
+
+/* Type toggle */
+.rg-type-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.rg-type-btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 20px;
+    border: 1px solid gold;
+    background-color: transparent;
+    color: white;
+    cursor: pointer;
+}
+
+    .rg-type-btn.active {
+        background-color: gold;
+        color: black;
+    }
+
+/* Filters */
+.rg-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.rg-filter label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: #ffebc2;
+}
+
+.rg-filter select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+}
+
+/* Random button */
+.rg-random-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    background-color: gold;
+    color: black;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+/* Result text */
+.rg-result {
+    font-size: 14px;
+    color: #ffb6c1;
+}
+
+/* Bottom nav */
+.rg-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #1a1a1a;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+}
+
+    .rg-bottom-nav a {
+        color: white;
+        text-decoration: none;
+        font-size: 13px;
+    }

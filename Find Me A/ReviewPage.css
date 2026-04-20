@@ -1,0 +1,144 @@
+﻿/* Base */
+.rv-body {
+    background-color: #0d0d0d;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding-bottom: 80px;
+}
+
+/* Header */
+.rv-header {
+    padding: 15px;
+}
+
+.rv-back-btn {
+    background: none;
+    border: none;
+    color: gold;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+/* Top Section */
+.rv-top {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+.rv-poster {
+    width: 150px;
+    height: 220px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.rv-info {
+    flex: 1;
+}
+
+.rv-title {
+    font-size: 26px;
+    color: gold;
+    margin: 0 0 5px 0;
+}
+
+.rv-meta {
+    color: #ffb6c1;
+    margin-bottom: 10px;
+}
+
+.rv-description {
+    color: #e0e0e0;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.rv-credits {
+    font-size: 14px;
+    margin: 3px 0;
+}
+
+/* Section Titles */
+.rv-section-title {
+    color: gold;
+    font-size: 20px;
+    margin: 20px 20px 10px 20px;
+}
+
+/* Stars */
+.rv-stars {
+    font-size: 32px;
+    color: gold;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.rv-halfstar {
+    text-align: center;
+    color: #ffb6c1;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* Review Box */
+.rv-textbox {
+    width: 90%;
+    height: 120px;
+    margin: 0 auto;
+    display: block;
+    border-radius: 10px;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+}
+
+/* Buttons */
+.rv-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.rv-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+    .rv-btn.cancel {
+        background-color: #444;
+        color: white;
+    }
+
+    .rv-btn.submit {
+        background-color: gold;
+        color: black;
+    }
+
+/* Bottom Nav */
+.rv-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #1a1a1a;
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0;
+}
+
+    .rv-bottom-nav a {
+        color: white;
+        text-decoration: none;
+        font-size: 13px;
+    }
+
+        .rv-bottom-nav a.active {
+            color: gold;
+            font-weight: bold;
+        }

@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Find Me A – Search</title>
+    <link rel="stylesheet" href="SearchPage.css">
+</head>
+
+<body class="sp-body">
+
+    <header class="sp-header">
+        <h1 class="sp-logo">Find Me A</h1>
+
+        <div class="sp-search-bar">
+            <input type="text" class="sp-search-input" placeholder="Search movies, shows, genres...">
+            <button class="sp-search-btn">Search</button>
+        </div>
+    </header>
+
+    <main class="sp-main">
+
+        <h2 class="sp-section-title">Results</h2>
+
+        <div class="sp-grid" id="results-grid">
+            <!-- JS inserts results -->
+        </div>
+
+    </main>
+
+    <nav class="sp-bottom-nav">
+        <a href="HomePage.html">Home</a>
+        <a href="SearchPage.html" class="active">Search</a>
+        <a href="WatchlistPage.html">Watchlist</a>
+        <a href="#">Reviews</a>
+        <a href="#">Profile</a>
+    </nav>
+
+    <script>const mockResults = [
+            "https://via.placeholder.com/150x220?text=Result+1",
+            "https://via.placeholder.com/150x220?text=Result+2",
+            "https://via.placeholder.com/150x220?text=Result+3",
+            "https://via.placeholder.com/150x220?text=Result+4"
+        ];
+
+        function loadResults() {
+            const grid = document.getElementById("results-grid");
+            mockResults.forEach(src => {
+                const img = document.createElement("img");
+                img.src = src;
+                img.className = "sp-poster";
+                grid.appendChild(img);
+            });
+        }
+
+        loadResults();</script>
+
+</body>
+</html>
