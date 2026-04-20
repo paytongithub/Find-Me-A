@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace FindMeA_.Views
+namespace Find_Me_A.Views
 {
     /// <summary>
     /// Interaction logic for HomePage.xaml
