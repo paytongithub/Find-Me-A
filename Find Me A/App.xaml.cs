@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace FindMeA_
+namespace Find_Me_A
 {
     /// <summary>
     /// Interaction logic for App.xaml
