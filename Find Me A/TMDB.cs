@@ -79,14 +79,14 @@ public class TMDB
                 title.Actors = new List<string>();
                 if (cdoc.RootElement.TryGetProperty("cast", out var castArr))
                 {
-                    int added = 0;
+                    // int added = 0;
                     foreach (var p in castArr.EnumerateArray())
                     {
                         if (p.TryGetProperty("name", out var pname))
                         {
                             title.Actors.Add(pname.GetString() ?? string.Empty);
-                            added++;
-                            if (added >= 5) break;
+                            //added++;
+                            //if (added >= 5) break;
                         }
                     }
                 }
@@ -136,18 +136,18 @@ public class TMDB
                     }
                 }
 
-                // actors (top 5)
+                // actors (all returned by TMDB credits)
                 title.Actors = new List<string>();
                 if (cdoc.RootElement.TryGetProperty("cast", out var castArr))
                 {
-                    int added = 0;
+                    //int added = 0;
                     foreach (var p in castArr.EnumerateArray())
                     {
                         if (p.TryGetProperty("name", out var pname))
                         {
                             title.Actors.Add(pname.GetString() ?? string.Empty);
-                            added++;
-                            if (added >= 5) break;
+                           // added++;
+                           // if (added >= 5) break;
                         }
                     }
                 }
