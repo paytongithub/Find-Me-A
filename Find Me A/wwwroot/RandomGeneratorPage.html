@@ -27,7 +27,7 @@
         <div class="rg-filters">
             <div class="rg-filter">
                 <label>Genre</label>
-                <select>
+                <select id="genreSelect">
                     <option>All</option>
                     <option>Action</option>
                     <option>Comedy</option>
@@ -82,21 +82,53 @@
 
         <button class="rg-random-btn" onclick="randomize()">Randomize</button>
 
-        <p id="rg-result" class="rg-result"></p>
+        <div id="rg-result" class="rg-result"></div>
     </main>
 
     <nav class="rg-bottom-nav">
-        <a href="HomePage.html">Home</a>
+        <a href="index.html">Home</a>
         <a href="SearchPage.html">Search</a>
         <a href="WatchlistPage.html">Watchlist</a>
-        <a href="#">Reviews</a>
-        <a href="#">Profile</a>
+        <a href="ReviewPage.html">Reviews</a>
+        <a href="ProfilePage.html">Profile</a>
     </nav>
 
-    <script>function randomize() {
-            // Placeholder for now – later this will call your API
-            document.getElementById("rg-result").textContent =
-                "random pick will appear here once the API is connected.";
+    <script>
+        const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+
+        async function randomize() {
+            const genre = document.getElementById("genreSelect").value;
+            const resultContainer = document.getElementById("rg-result");
+
+            try {
+                const response = await fetch(`/random?genre=${encodeURIComponent(genre)}`);
+
+                if (!response.ok) {
+                    throw new Error("Could not get a random movie.");
+                }
+
+                const movie = await response.json();
+
+                const posterUrl = movie.poster
+                    ? `${IMAGE_BASE_URL}${movie.poster}`
+                    : "";
+
+                resultContainer.innerHTML = `
+                    <div class="movie-card">
+                        ${
+                            posterUrl
+                                ? `<img src="${posterUrl}" alt="${movie.title}" class="poster">`
+                                : `<div class="poster placeholder">No Image</div>`
+                        }
+                        <h3>${movie.title}</h3>
+                        <p>⭐ ${movie.rating}</p>
+                        <p>${movie.overview ?? "No overview available."}</p>
+                    </div>
+                `;
+            } catch (error) {
+                resultContainer.innerHTML = `<p>${error.message}</p>`;
+                console.error(error);
+            }
         }
     </script>
 

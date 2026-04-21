@@ -294,4 +294,39 @@ public class TMDB
         var discoverJson = await client.GetStringAsync(discoverUrl);
         return discoverJson;
     }
+
+    public async Task<string> GetPopularMovies()
+    {
+        var url = $"{baseUrl}/movie/popular?api_key={apiKey}";
+        var response = await client.GetStringAsync(url);
+        return response;
+    }
+
+    public async Task<string> GetTopRatedMovies()
+    {
+        var url = $"{baseUrl}/movie/top_rated?api_key={apiKey}";
+        var response = await client.GetStringAsync(url);
+        return response;
+    }
+
+    public async Task<string> GetTrendingMovies()
+    {
+        var url = $"{baseUrl}/trending/movie/week?api_key={apiKey}";
+        var response = await client.GetStringAsync(url);
+        return response;
+    }
+
+    public async Task<string> DiscoverMoviesByGenre(int genreId)
+    {
+        var url = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={genreId}&sort_by=popularity.desc";
+        var response = await client.GetStringAsync(url);
+        return response;
+    }
+
+    public async Task<string> DiscoverMoviesByActor(int actorId)
+    {
+        var url = $"{baseUrl}/discover/movie?api_key={apiKey}&with_cast={actorId}&sort_by=popularity.desc";
+        var response = await client.GetStringAsync(url);
+        return response;
+    }
 }
