@@ -2,109 +2,85 @@
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>Find Me A – Watchlist</title>
+ <title>Find Me A – Watchlist</title>
     <link rel="stylesheet" href="WatchlistPage.css">
 </head>
 
 <body class="wl-body">
 
     <header class="wl-header">
-        <h1 class="wl-logo">Find Me A</h1>
+        <h1 class="wl-title">Watchlist</h1>
+        <button class="wl-add-btn" onclick="addFilm()">+ Add Film</button>
     </header>
 
-    <main class="wl-main">
-
-        <!-- WATCHLIST SECTION -->
-        <section class="wl-section">
-            <h2 class="wl-section-title">Watchlist</h2>
-
-            <div class="wl-carousel-container">
-                <button class="wl-arrow left" onclick="scrollCarousel('watchlist', -300)">❮</button>
-
-                <div class="wl-carousel" id="watchlist">
-                    <!-- API -->
-                </div>
-
-                <button class="wl-arrow right" onclick="scrollCarousel('watchlist', 300)">❯</button>
-            </div>
-        </section>
-
-        <!-- COMING SOON -->
-        <section class="wl-section">
-            <h2 class="wl-section-title">Coming Soon</h2>
-
-            <div class="wl-carousel-container">
-                <button class="wl-arrow left" onclick="scrollCarousel('coming', -300)">❮</button>
-
-                <div class="wl-carousel" id="coming">
-                    <!-- API -->
-                </div>
-
-                <button class="wl-arrow right" onclick="scrollCarousel('coming', 300)">❯</button>
-            </div>
-        </section>
-
-        <!-- RECOMMENDATIONS -->
-        <section class="wl-section">
-            <h2 class="wl-section-title">Because You Added: Stranger Things</h2>
-
-            <div class="wl-carousel-container">
-                <button class="wl-arrow left" onclick="scrollCarousel('recommend', -300)">❮</button>
-
-                <div class="wl-carousel" id="recommend">
-                    <!-- API -->
-                </div>
-
-                <button class="wl-arrow right" onclick="scrollCarousel('recommend', 300)">❯</button>
-            </div>
-        </section>
-
+    <main class="wl-main" id="seen-list">
+        <!-- Items loaded from backend -->
     </main>
 
     <nav class="wl-bottom-nav">
         <a href="HomePage.html">Home</a>
         <a href="SearchPage.html">Search</a>
         <a href="WatchlistPage.html" class="active">Watchlist</a>
-        <a href="#">Reviews</a>
-        <a href="#">Profile</a>
+        <a href="ReviewPage.html">Reviews</a>
+        <a href="ProfilePage.html">Profile</a>
     </nav>
 
-    <script>// Mock data for now
-        const watchlistData = [
-            "https://via.placeholder.com/150x220?text=The+Recruit",
-            "https://via.placeholder.com/150x220?text=Hudson+%26+Rex",
-            "https://via.placeholder.com/150x220?text=Cabin+10"
-        ];
+    <script>
+        const username = "Username"; // Replace with logged-in user
 
-        const comingData = [
-            "https://via.placeholder.com/150x220?text=The+Last+of+Us",
-            "https://via.placeholder.com/150x220?text=Wednesday",
-            "https://via.placeholder.com/150x220?text=Ginny+%26+Georgia"
-        ];
+        async function loadWatchlist() {
+            const response = await fetch(`/api/watchlist/${username}`);
+            const data = await response.json();
 
-        const recommendData = [
-            "https://via.placeholder.com/150x220?text=Locke+%26+Key",
-            "https://via.placeholder.com/150x220?text=Mayfair+Witches",
-            "https://via.placeholder.com/150x220?text=Hill+House"
-        ];
+            const container = document.getElementById("seen-list");
+            container.innerHTML = "";
 
-        function loadCarousel(id, data) {
-            const container = document.getElementById(id);
-            data.forEach(src => {
-                const img = document.createElement("img");
-                img.src = src;
-                img.className = "wl-poster";
-                container.appendChild(img);
+            data.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "wl-card";
+
+                const posterUrl = `https://image.tmdb.org/t/p/w200/${item.Title.PosterPath}`;
+
+                card.innerHTML = `
+                    <img src="${posterUrl}" class="wl-poster">
+
+                    <div class="wl-info">
+                        <h3>${item.Title.TitleName}</h3>
+
+                        <div class="wl-stars">
+                            ${"★".repeat(item.UserRating ?? 0)}${"☆".repeat(5 - (item.UserRating ?? 0))}
+                        </div>
+
+                        <div class="wl-actions">
+                            <button class="wl-edit-btn" onclick="changeRating('${item.Title.TitleName}')">Edit Rating</button>
+                            <button class="wl-delete-btn" onclick="deleteFilm('${item.Title.TitleName}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
             });
         }
 
-        function scrollCarousel(id, amount) {
-            document.getElementById(id).scrollBy({ left: amount, behavior: "smooth" });
+        async function deleteFilm(titleName) {
+            await fetch(`/api/watchlist/${username}/${titleName}`, { method: "DELETE" });
+            loadWatchlist();
         }
 
-        loadCarousel("watchlist", watchlistData);
-        loadCarousel("coming", comingData);
-        loadCarousel("recommend", recommendData);</script>
+        async function changeRating(titleName) {
+            const newRating = prompt("Enter new rating (1–5):");
+            if (newRating >= 1 && newRating <= 5) {
+                await fetch(`/api/watchlist/${username}/${titleName}/rating/${newRating}`, { method: "PUT" });
+                loadWatchlist();
+            }
+        }
+
+        function addFilm() {
+            alert("This will open an Add Film popup once the API is ready.");
+        }
+
+        loadWatchlist();
+    </script>
 
 </body>
-</html>
+</html
