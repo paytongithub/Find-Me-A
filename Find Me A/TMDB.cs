@@ -44,7 +44,8 @@ public class TMDB
                 var first = results[0];
                 var id = first.GetProperty("id").GetInt32();
                 // Get details and credits
-                var detailsUrl = $"{baseUrl}/movie/{id}?api_key={apiKey}&language=en-US";
+                // request external_ids so we can obtain the imdb_id
+                var detailsUrl = $"{baseUrl}/movie/{id}?api_key={apiKey}&language=en-US&append_to_response=external_ids";
                 var creditsUrl = $"{baseUrl}/movie/{id}/credits?api_key={apiKey}";
                 var detailsJson = await client.GetStringAsync(detailsUrl);
                 var creditsJson = await client.GetStringAsync(creditsUrl);
@@ -73,6 +74,19 @@ public class TMDB
                         if (g.TryGetProperty("name", out var gname))
                             title.Genres.Add(gname.GetString() ?? string.Empty);
                     }
+                }
+
+                // poster and overview
+                if (droot.TryGetProperty("poster_path", out var ppath) && ppath.ValueKind != JsonValueKind.Null)
+                    title.PosterPath = ppath.GetString();
+                if (droot.TryGetProperty("overview", out var over) && over.ValueKind != JsonValueKind.Null)
+                    title.Overview = over.GetString();
+
+                // imdb id may be in external_ids
+                if (droot.TryGetProperty("external_ids", out var ext) && ext.ValueKind == JsonValueKind.Object)
+                {
+                    if (ext.TryGetProperty("imdb_id", out var iid) && iid.ValueKind != JsonValueKind.Null)
+                        title.ImdbId = iid.GetString();
                 }
 
                 // actors (top 5)
@@ -105,7 +119,7 @@ public class TMDB
             {
                 var first = results[0];
                 var id = first.GetProperty("id").GetInt32();
-                var detailsUrl = $"{baseUrl}/tv/{id}?api_key={apiKey}&language=en-US";
+                var detailsUrl = $"{baseUrl}/tv/{id}?api_key={apiKey}&language=en-US&append_to_response=external_ids";
                 var creditsUrl = $"{baseUrl}/tv/{id}/credits?api_key={apiKey}";
                 var detailsJson = await client.GetStringAsync(detailsUrl);
                 var creditsJson = await client.GetStringAsync(creditsUrl);
@@ -134,6 +148,17 @@ public class TMDB
                         if (g.TryGetProperty("name", out var gname))
                             title.Genres.Add(gname.GetString() ?? string.Empty);
                     }
+                }
+
+                // poster, overview, external ids
+                if (droot.TryGetProperty("poster_path", out var ppath) && ppath.ValueKind != JsonValueKind.Null)
+                    title.PosterPath = ppath.GetString();
+                if (droot.TryGetProperty("overview", out var over) && over.ValueKind != JsonValueKind.Null)
+                    title.Overview = over.GetString();
+                if (droot.TryGetProperty("external_ids", out var ext) && ext.ValueKind == JsonValueKind.Object)
+                {
+                    if (ext.TryGetProperty("imdb_id", out var iid) && iid.ValueKind != JsonValueKind.Null)
+                        title.ImdbId = iid.GetString();
                 }
 
                 // actors (all returned by TMDB credits)

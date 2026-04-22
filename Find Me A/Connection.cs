@@ -16,6 +16,9 @@ namespace Find_Me_A
         public int? EpisodeCount { get; set; } // null for movies
         public List<string> Genres { get; set; } = new List<string>();
         public List<string> Actors { get; set; } = new List<string>();
+        public string? PosterPath { get; set; }
+        public string? Overview { get; set; }
+        public string? ImdbId { get; set; }
     }
     class Connection
     {

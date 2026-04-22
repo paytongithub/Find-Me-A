@@ -78,8 +78,6 @@ namespace Find_Me_A
 
             return ExecuteTitleQuery(sql, new SqlParameter("@TitleName", titleName));
         }
-// It's probably smarter just to have a single search method that takes in the genre/actor name in as a string[] of any size, instead of overload
-
 /* 
         public List<Title> SearchByGenre(string genreName)
         {
