@@ -12,49 +12,58 @@ body {
 
 .auth-container {
     width: 90%;
-    max-width: 350px;
+    max-width: 420px;
     text-align: center;
 }
 
 .auth-title {
-    font-size: 32px;
+    font-size: 64px;
     color: gold;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+    font-weight: bold;
 }
 
 .auth-form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 18px;
 }
 
 .auth-input {
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
     width: 100%;
-    font-size: 16px;
+    padding: 18px 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 12px;
+    box-sizing: border-box;
+    background: #f2f2f2;
+    color: #111;
 }
 
 .auth-btn {
-    padding: 12px;
-    border-radius: 8px;
+    width: 100%;
+    padding: 16px;
     border: none;
-    font-size: 18px;
-    cursor: pointer;
+    border-radius: 12px;
+    font-size: 20px;
     font-weight: bold;
     background-color: gold;
     color: black;
+    cursor: pointer;
+}
+
+.auth-btn:hover {
+    opacity: 0.95;
 }
 
 .auth-switch {
-    margin-top: 20px;
-    font-size: 14px;
+    margin-top: 24px;
+    font-size: 16px;
     color: #ffb6c1;
 }
 
-    .auth-switch a {
-        color: gold;
-        text-decoration: none;
-        font-weight: bold;
-    }
+.auth-switch a {
+    color: gold;
+    text-decoration: none;
+    font-weight: bold;
+}
