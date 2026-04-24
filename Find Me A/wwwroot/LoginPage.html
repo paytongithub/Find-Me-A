@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Find Me A – Log In</title>
+    <link rel="stylesheet" href="LoginPage.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <h1 class="auth-title">Welcome Back</h1>
+
+        <div class="auth-form">
+            <select id="usernameSelect" class="auth-input">
+                <option value="">Select your account</option>
+            </select>
+
+            <button id="loginBtn" class="auth-btn">Log In</button>
+        </div>
+
+        <p class="auth-switch">
+            Don't have an account?
+            <a href="SignUpPage.html">Sign Up</a>
+        </p>
+    </div>
+
+    <script>
+        async function loadUsers() {
+            const select = document.getElementById("usernameSelect");
+
+            try {
+                const response = await fetch("/users");
+                const users = await response.json();
+
+                users.forEach(username => {
+                    const option = document.createElement("option");
+                    option.value = username;
+                    option.textContent = username;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        document.getElementById("loginBtn").addEventListener("click", () => {
+            const username = document.getElementById("usernameSelect").value;
+
+            if (!username) {
+                alert("Please select a user.");
+                return;
+            }
+
+            localStorage.setItem("username", username);
+            window.location.href = "index.html";
+        });
+
+        loadUsers();
+    </script>
+</body>
+</html>

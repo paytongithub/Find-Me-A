@@ -1,0 +1,185 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Find Me A – Watchlist</title>
+    <link rel="stylesheet" href="WatchlistPage.css">
+</head>
+
+<body class="wl-body">
+
+    <header class="wl-header">
+        <h1 class="wl-title">Watchlist</h1>
+        <button class="wl-add-btn" onclick="addFilm()">+ Add Film</button>
+    </header>
+
+    <main class="wl-main" id="seen-list">
+        <!-- Items loaded from backend -->
+    </main>
+
+    <nav class="wl-bottom-nav">
+        <a href="index.html">Home</a>
+        <a href="SearchPage.html">Search</a>
+        <a href="WatchlistPage.html" class="active">Watchlist</a>
+        <a href="ReviewPage.html">Reviews</a>
+        <a href="ProfilePage.html">Profile</a>
+    </nav>
+
+    <script>
+        const username = localStorage.getItem("username");
+
+        if (!username) {
+            window.location.href = "LoginPage.html";
+        }
+
+        async function loadWatchlist() {
+            try {
+                const response = await fetch(`/watchlist?username=${encodeURIComponent(username)}`);
+
+                if (!response.ok) {
+                    throw new Error("Failed to load watchlist");
+                }
+
+                const data = await response.json();
+                const container = document.getElementById("seen-list");
+                container.innerHTML = "";
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = "<p>No watched movies yet.</p>";
+                    return;
+                }
+
+                data.forEach(item => {
+                    const card = document.createElement("div");
+                    card.className = "wl-card";
+
+                    const posterUrl = item.poster
+                        ? `https://image.tmdb.org/t/p/w200${item.poster}`
+                        : "";
+
+                    const stars = item.userRating
+                        ? "★".repeat(item.userRating) + "☆".repeat(10 - item.userRating)
+                        : "No rating yet";
+
+                    card.innerHTML = `
+                        <div class="wl-card-left">
+                            ${
+                                posterUrl
+                                    ? `<img src="${posterUrl}" class="wl-poster" alt="${item.titleName}">`
+                                    : `<div class="wl-poster-placeholder">🎬</div>`
+                            }
+                        </div>
+
+                        <div class="wl-card-right">
+                            <h2 class="wl-movie-title">${item.titleName}</h2>
+
+                            <div class="wl-meta-row">
+                                ${(item.genres && item.genres.length)
+                                    ? item.genres.map(g => `<span class="wl-chip">${g}</span>`).join("")
+                                    : `<span class="wl-chip">No Genre</span>`
+                                }
+                            </div>
+
+                            <div class="wl-rating">
+                                <strong>Your Rating:</strong> ${stars}
+                            </div>
+
+                            <div class="wl-overview-box">
+                                <p><strong>Actors:</strong> ${(item.actors && item.actors.length) ? item.actors.slice(0, 5).join(", ") : "None"}</p>
+                                <p><strong>Watched:</strong> ${item.watchedDate ?? "Unknown"}</p>
+                            </div>
+
+                            <div class="wl-actions">
+                                <button class="wl-edit-btn" onclick="changeRating('${item.titleName.replace(/'/g, "\\'")}')">Edit Rating</button>
+                                <button class="wl-delete-btn" onclick="deleteFilm('${item.titleName.replace(/'/g, "\\'")}')">Delete</button>
+                            </div>
+                        </div>
+                    `;
+
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                document.getElementById("seen-list").innerHTML = "<p>Error loading watchlist.</p>";
+                console.error(error);
+            }
+        }
+
+        async function deleteFilm(titleName) {
+            try {
+                const response = await fetch(
+                    `/watchlist/remove?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(titleName)}`,
+                    { method: "DELETE" }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to delete movie");
+                }
+
+                loadWatchlist();
+            } catch (error) {
+                console.error(error);
+                alert("Could not delete movie.");
+            }
+        }
+
+        async function changeRating(titleName) {
+            const newRating = prompt("Enter new rating (1–10):");
+
+            if (!newRating) return;
+
+            const parsedRating = parseInt(newRating);
+
+            if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 10) {
+                alert("Please enter a number between 1 and 10.");
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `/watchlist/update?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(titleName)}&newRating=${parsedRating}`,
+                    { method: "PUT" }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to update rating");
+                }
+
+                loadWatchlist();
+            } catch (error) {
+                console.error(error);
+                alert("Could not update rating.");
+            }
+        }
+
+        function addFilm() {
+            const titleName = prompt("Enter movie title:");
+            if (!titleName) return;
+
+            const rating = prompt("Enter rating (1–10):");
+            const parsedRating = parseInt(rating);
+
+            if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 10) {
+                alert("Please enter a number between 1 and 10.");
+                return;
+            }
+
+            fetch(
+                `/watchlist/add?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(titleName)}&rating=${parsedRating}`,
+                { method: "POST" }
+            )
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to add movie");
+                return response.json();
+            })
+            .then(() => loadWatchlist())
+            .catch(error => {
+                console.error(error);
+                alert("Could not add movie.");
+            });
+        }
+
+        loadWatchlist();
+    </script>
+
+</body>
+</html>

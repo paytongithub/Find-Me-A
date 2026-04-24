@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Find Me A – Home</title>
+    <link rel="stylesheet" href="HomePage.css">
+</head>
+
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <h1 class="logo">Find Me A</h1>
+        <p class="welcome">Welcome, User</p>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+        <input id="searchInput" type="text" placeholder="Search movies, shows, genres..." class="search-input">
+        <button id="searchBtn" class="search-btn">Search</button>
+    </div>
+
+    
+    <section class="section">
+        <h2 class="section-title">Search Results</h2>
+        <div id="resultsContainer" class="carousel"></div>
+    </section>
+
+
+    <section class="section">
+        <h2 class="section-title">Featured For You</h2>
+        <div id="featuredContainer" class="carousel"></div>
+    </section>
+
+    <section class="section">
+        <h2 class="section-title">Top Picks For You</h2>
+        <div id="topPicksContainer" class="carousel"></div>
+    </section>
+
+    <section class="section">
+        <h2 class="section-title">Trending Now</h2>
+        <div id="trendingContainer" class="carousel"></div>
+    </section>
+
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="index.html">Home</a>
+        <a href="SearchPage.html">Search</a>
+        <a href="WatchlistPage.html">Watchlist</a>
+        <a href="ReviewPage.html">Reviews</a>
+        <a href="ProfilePage.html">Profile</a>
+    </nav>
+
+    <script>
+        const username = localStorage.getItem("username");
+
+        const searchBtn = document.getElementById("searchBtn");
+        const searchInput = document.getElementById("searchInput");
+        const resultsContainer = document.getElementById("resultsContainer");
+
+        const featuredContainer = document.getElementById("featuredContainer");
+        const topPicksContainer = document.getElementById("topPicksContainer");
+        const trendingContainer = document.getElementById("trendingContainer");
+
+        const welcomeText = document.querySelector(".welcome");
+
+        const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+
+        if (welcomeText && username) {
+            welcomeText.textContent = `Welcome, ${username}`;
+        }
+
+        function createMovieCard(movie) {
+            const card = document.createElement("div");
+            card.className = "movie-card";
+
+            const posterUrl = movie.poster
+                ? `${IMAGE_BASE_URL}${movie.poster}`
+                : "";
+
+            const shortOverview = movie.overview
+                ? movie.overview.length > 120
+                    ? movie.overview.substring(0, 120) + "..."
+                    : movie.overview
+                : "No overview available.";
+
+            card.innerHTML = `
+                <div class="poster-card">
+                    ${
+                        posterUrl
+                            ? `<img src="${posterUrl}" alt="${movie.title}" class="poster">`
+                            : `<div class="poster placeholder">No Image</div>`
+                    }
+                    <h3>${movie.title ?? "Untitled"}</h3>
+                    <p>⭐ ${movie.rating ?? "N/A"}</p>
+                    ${movie.overview !== undefined ? `<p>${shortOverview}</p>` : ""}
+                </div>
+            `;
+
+            return card;
+        }
+
+        async function searchMovies() {
+            const query = searchInput.value.trim();
+
+            if (!query) {
+                resultsContainer.innerHTML = "<p>Please enter a movie title.</p>";
+                return;
+            }
+
+            try {
+                const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
+
+                if (!response.ok) {
+                    throw new Error("Search request failed.");
+                }
+
+                const movies = await response.json();
+                resultsContainer.innerHTML = "";
+
+                if (!movies || movies.length === 0) {
+                    resultsContainer.innerHTML = "<p>No results found.</p>";
+                    return;
+                }
+
+                movies.forEach(movie => {
+                    resultsContainer.appendChild(createMovieCard(movie));
+                });
+            } catch (error) {
+                resultsContainer.innerHTML = `<p>Error: ${error.message}</p>`;
+                console.error(error);
+            }
+        }
+
+        async function loadSection(url, container) {
+            try {
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load ${url}`);
+                }
+
+                const movies = await response.json();
+                container.innerHTML = "";
+
+                if (!movies || movies.length === 0) {
+                    container.innerHTML = "<p>No movies found.</p>";
+                    return;
+                }
+
+                movies.forEach(movie => {
+                    container.appendChild(createMovieCard(movie));
+                });
+            } catch (error) {
+                container.innerHTML = "<p>Error loading section.</p>";
+                console.error(error);
+            }
+        }
+
+        searchBtn.addEventListener("click", searchMovies);
+
+        searchInput.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                searchMovies();
+            }
+        });
+
+        if (username) {
+            loadSection(`/featured?username=${encodeURIComponent(username)}`, featuredContainer);
+            loadSection(`/top-picks?username=${encodeURIComponent(username)}`, topPicksContainer);
+        } else {
+            featuredContainer.innerHTML = "<p>Log in to see personalized picks.</p>";
+            topPicksContainer.innerHTML = "<p>Log in to see personalized picks.</p>";
+        }
+
+        loadSection("/trending", trendingContainer);
+    </script>
+
+</body>
+</html>
