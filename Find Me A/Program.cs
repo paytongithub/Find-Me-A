@@ -8,8 +8,51 @@ var builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
 var app = builder.Build();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+
 string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
-using var conn = new SqlConnection(connectionString);
+app.MapGet("/login", async (HttpContext ctx) =>
+{
+    var html = await File.ReadAllTextAsync("wwwroot/LoginPage.html");
+    return Results.Content(html, "text/html");
+});
+
+app.MapPost("/login", (HttpContext ctx) =>
+{
+    if (string.IsNullOrEmpty(connectionString))
+        return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
+
+    // Read form fields
+    string username = ctx.Request.Form["username"].ToString();
+    string password = ctx.Request.Form["password"].ToString();
+
+    var login = new Login(connectionString);
+    var (success, message, userId) = login.AuthenticateUser(username, password);
+
+    if (success)
+        return Results.Ok(new { message, userId });
+    else
+        return Results.BadRequest(new { error = message });
+});
+
+app.MapPost("/register", (HttpContext ctx) =>
+{
+    if (string.IsNullOrEmpty(connectionString))
+        return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
+
+    string username = ctx.Request.Form["username"].ToString();
+    string password = ctx.Request.Form["password"].ToString();
+
+    var login = new Login(connectionString);
+    var (success, message) = login.RegisterUser(username, password);
+
+    if (success)
+        return Results.Ok(new { message });
+    else
+        return Results.BadRequest(new { error = message });
+});
 
 app.MapGet("/search", async (string query) =>
 {
@@ -45,57 +88,6 @@ app.MapGet("/run-tests", async () =>
     }
 });
 
-// Rendered watchlist page (server-side C# HTML)
-app.MapGet("/watchlist", async (string? username) =>
-{
-    // if username not provided, show a simple form to enter username
-    if (string.IsNullOrWhiteSpace(username))
-    {
-        var form = "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Enter username</title></head><body>" +
-                   "<h1>Enter username</h1>" +
-                   "<form method=\"get\" action=\"/watchlist\">" +
-                   "<input name=\"username\" placeholder=\"Username\"/>" +
-                   "<button type=\"submit\">View Watchlist</button>" +
-                   "</form></body></html>";
-        return Results.Content(form, "text/html");
-    }
-
-    string? cs = Environment.GetEnvironmentVariable("DB_CONNECTION");
-    if (string.IsNullOrWhiteSpace(cs)) return Results.Problem("DB_CONNECTION not set");
-
-    var wl = new WatchList(cs);
-    var items = wl.GetWatchedList(username);
-
-    var tmdb = new TMDB();
-
-    // Build simple HTML showing posters only
-    var sb = new System.Text.StringBuilder();
-    sb.Append("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Watchlist for ");
-    sb.Append(System.Net.WebUtility.HtmlEncode(username));
-    sb.Append("</title><link rel=\"stylesheet\" href=\"WatchlistPage.css\"></head><body class=\"wl-body\">");
-    sb.Append($"<header class=\"wl-header\"><h1 class=\"wl-logo\">Find Me A</h1></header><main class=\"wl-main\"><section class=\"wl-section\"><h2 class=\"wl-section-title\">Watchlist</h2><div class=\"wl-carousel-container\"><div class=\"wl-carousel\">");
-
-    foreach (var wi in items)
-    {
-        var titleName = wi.Title?.TitleName ?? string.Empty;
-        Title? details = null;
-        try
-        {
-            details = await tmdb.GetTitleByName(titleName);
-        }
-        catch { }
-
-        var poster = details?.PosterPath != null ? $"https://image.tmdb.org/t/p/w300{details.PosterPath}" : "https://via.placeholder.com/150x220?text=No+Image";
-
-        var href = $"/details?title={System.Net.WebUtility.UrlEncode(titleName)}";
-        sb.Append($"<a class=\"wl-poster-link\" href=\"{href}\"><img class=\"wl-poster\" src=\"{System.Net.WebUtility.HtmlEncode(poster)}\" alt=\"{System.Net.WebUtility.HtmlEncode(titleName)}\"></a>");
-    }
-
-    sb.Append("</div></div></section></main><nav class=\"wl-bottom-nav\"><a href=\"/\">Home</a><a href=\"/searchpage.html\">Search</a><a class=\"active\" href=\"/watchlist\">Watchlist</a></nav></body></html>");
-
-    return Results.Content(sb.ToString(), "text/html");
-});
-
 // Rendered details page (server-side)
 app.MapGet("/details", async (string title) =>
 {
@@ -112,7 +104,7 @@ app.MapGet("/details", async (string title) =>
         var poster = t.PosterPath != null ? $"https://image.tmdb.org/t/p/w500{t.PosterPath}" : "https://via.placeholder.com/300x450?text=No+Image";
         sb.Append($"<img src=\"{System.Net.WebUtility.HtmlEncode(poster)}\" class=\"dt-poster\">\n");
         sb.Append($"<h1 class=\"dt-title\">{System.Net.WebUtility.HtmlEncode(t.TitleName)}</h1>\n");
-        sb.Append($"<p class=\"dt-subinfo\">{(t.ReleaseDate==DateTime.MinValue?string.Empty:t.ReleaseDate.Year.ToString())} • {(t.TitleType??"")}</p>\n");
+        sb.Append($"<p class=\"dt-subinfo\">{(t.ReleaseDate == DateTime.MinValue ? string.Empty : t.ReleaseDate.Year.ToString())} • {(t.TitleType ?? "")}</p>\n");
         sb.Append($"<p class=\"dt-summary\">{System.Net.WebUtility.HtmlEncode(t.Overview ?? "No summary available.")}</p>\n");
         // use single quotes around the onclick attribute so serialized title (which has double quotes) is valid
         sb.Append($"<button class=\"dt-watchlist-btn\" onclick='addToWatchlist({System.Text.Json.JsonSerializer.Serialize(t.TitleName)})'>+ Add to Watchlist</button>\n");
@@ -168,6 +160,11 @@ async function addToWatchlist(title) {
 
 app.MapGet("/db-test", () =>
 {
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
+    }
+
     try
     {
         using var conn = new SqlConnection(connectionString);
@@ -185,61 +182,396 @@ app.MapGet("/db-test", () =>
     }
 });
 
-app.MapPost("/watchlist/add", (string username, string movieTitle, int rating) => 
+app.MapPost("/watchlist/add", (string username, string movieTitle, int rating) =>
 {
-    try 
-    {
-        var watchList = new WatchList(connectionString);
-        
-        watchList.AddToWatchList(username, movieTitle, DateTime.Now, rating);
-        
-        return Results.Ok(new { message = $"Successfully added {movieTitle} for {username}" });
-    }
-    catch (Exception ex) 
-    {
-        return Results.BadRequest(new { error = ex.Message });
-    }
-});
-
-app.MapDelete("/watchlist/remove", (string username, string movieTitle) => 
-{
-    string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
-
     if (string.IsNullOrEmpty(connectionString))
     {
         return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
     }
 
-    try 
+    try
     {
         var watchList = new WatchList(connectionString);
-        
+        watchList.AddToWatchList(username, movieTitle, DateTime.Now, rating);
+
+        return Results.Ok(new { message = $"Successfully added {movieTitle} for {username}" });
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+app.MapDelete("/watchlist/remove", (string username, string movieTitle) =>
+{
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
+    }
+
+    try
+    {
+        var watchList = new WatchList(connectionString);
         watchList.RemoveFromWatchList(username, movieTitle);
-        
+
         return Results.Ok(new { message = $"Removed {movieTitle} from {username}'s list." });
     }
-    catch (Exception ex) 
+    catch (Exception ex)
     {
         return Results.BadRequest(new { error = ex.Message });
     }
 });
 
-app.MapPut("/watchlist/update", (string username, string movieTitle, int newRating) => 
+app.MapPut("/watchlist/update", (string username, string movieTitle, int newRating) =>
 {
-    string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
-
-    try 
+    if (string.IsNullOrEmpty(connectionString))
     {
-        var watchList = new WatchList(connectionString ?? "");
-        
+        return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
+    }
+
+    try
+    {
+        var watchList = new WatchList(connectionString);
         watchList.UpdateRating(username, movieTitle, newRating);
-        
+
         return Results.Ok(new { message = $"Updated {movieTitle} rating to {newRating}." });
     }
-    catch (Exception ex) 
+    catch (Exception ex)
     {
         return Results.BadRequest(new { error = ex.Message });
     }
 });
+
+
+app.MapGet("/featured", async (string username) =>
+{
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
+    }
+
+
+    try
+    {
+        var tmdb = new TMDB();
+
+
+        var watched = Recommendation.GetUserWatchedDetails(connectionString, username);
+        var genreProfile = Recommendation.GetGenreRecommendationProfileFromWatched(watched);
+
+
+        var topGenre = genreProfile.GenreData
+            .OrderByDescending(g => g.Item3)
+            .ThenByDescending(g => g.Item2)
+            .FirstOrDefault();
+
+
+        string json;
+
+
+        if (topGenre == null)
+        {
+            json = await tmdb.GetPopularMovies();
+        }
+        else
+        {
+            string genreName = "";
+
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+
+                using var cmd = new SqlCommand(
+                    "SELECT GenreName FROM Genres WHERE GenreID = @GenreID", conn);
+
+
+                cmd.Parameters.AddWithValue("@GenreID", topGenre.Item1);
+
+
+                var result = cmd.ExecuteScalar();
+                genreName = result?.ToString() ?? "";
+            }
+
+
+            if (string.IsNullOrWhiteSpace(genreName))
+            {
+                json = await tmdb.GetPopularMovies();
+            }
+            else
+            {
+                json = await tmdb.DiscoverByGenre(new[] { genreName });
+            }
+        }
+
+
+        var data = JsonDocument.Parse(json);
+
+
+        var movies = data.RootElement
+            .GetProperty("results")
+            .EnumerateArray()
+            .Take(10)
+            .Select(movie => new
+            {
+                title = movie.GetProperty("title").GetString(),
+                overview = movie.GetProperty("overview").GetString(),
+                poster = movie.GetProperty("poster_path").GetString(),
+                rating = movie.GetProperty("vote_average").GetDouble()
+            });
+
+
+        return Results.Ok(movies);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+
+app.MapGet("/top-picks", async (string username) =>
+{
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
+    }
+
+
+    try
+    {
+        var watched = Recommendation.GetUserWatchedDetails(connectionString, username);
+        var actorProfile = Recommendation.GetActorRecommendationProfileFromWatched(watched);
+
+
+        var topActor = actorProfile.ActorData
+            .OrderByDescending(a => a.Item3)
+            .ThenByDescending(a => a.Item2)
+            .FirstOrDefault();
+
+
+        var tmdb = new TMDB();
+        string json;
+
+
+        if (topActor == null)
+        {
+            json = await tmdb.GetTopRatedMovies();
+        }
+        else
+        {
+            string actorName = "";
+
+
+            using (var conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+
+                using var cmd = new SqlCommand(
+                    "SELECT ActorName FROM Actors WHERE ActorID = @ActorID", conn);
+
+
+                cmd.Parameters.AddWithValue("@ActorID", topActor.Item1);
+
+
+                var result = cmd.ExecuteScalar();
+                actorName = result?.ToString() ?? "";
+            }
+
+
+            if (string.IsNullOrWhiteSpace(actorName))
+            {
+                json = await tmdb.GetTopRatedMovies();
+            }
+            else
+            {
+                json = await tmdb.DiscoverByActor(new[] { actorName });
+            }
+        }
+
+
+        var data = JsonDocument.Parse(json);
+
+
+        var movies = data.RootElement
+            .GetProperty("results")
+            .EnumerateArray()
+            .Take(10)
+            .Select(movie => new
+            {
+                title = movie.GetProperty("title").GetString(),
+                overview = movie.GetProperty("overview").GetString(),
+                poster = movie.GetProperty("poster_path").GetString(),
+                rating = movie.GetProperty("vote_average").GetDouble()
+            });
+
+
+        return Results.Ok(movies);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine(ex.Message);
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+
+app.MapGet("/trending", async () =>
+{
+    var tmdb = new TMDB();
+    var json = await tmdb.GetTrendingMovies();
+
+    var data = JsonDocument.Parse(json);
+
+    var movies = data.RootElement
+        .GetProperty("results")
+        .EnumerateArray()
+        .Take(10)
+        .Select(movie => new
+        {
+            title = movie.GetProperty("title").GetString(),
+            poster = movie.GetProperty("poster_path").GetString(),
+            rating = movie.GetProperty("vote_average").GetDouble()
+        });
+
+    return Results.Ok(movies);
+});
+app.MapGet("/random", async (string? genre) =>
+{
+    var tmdb = new TMDB();
+    var json = await tmdb.GetPopularMovies();
+
+    var data = JsonDocument.Parse(json);
+
+    var movies = data.RootElement
+        .GetProperty("results")
+        .EnumerateArray()
+        .Select(movie => new
+        {
+            title = movie.GetProperty("title").GetString(),
+            overview = movie.GetProperty("overview").GetString(),
+            poster = movie.GetProperty("poster_path").GetString(),
+            rating = movie.GetProperty("vote_average").GetDouble(),
+            genreIds = movie.GetProperty("genre_ids").EnumerateArray().Select(g => g.GetInt32()).ToList()
+        })
+        .ToList();
+
+    if (!string.IsNullOrWhiteSpace(genre) && genre != "All")
+    {
+        var genreMap = new Dictionary<string, int>
+        {
+            { "Action", 28 },
+            { "Comedy", 35 },
+            { "Drama", 18 },
+            { "Horror", 27 }
+        };
+
+        if (genreMap.TryGetValue(genre, out int genreId))
+        {
+            movies = movies.Where(m => m.genreIds.Contains(genreId)).ToList();
+        }
+    }
+
+    if (movies.Count == 0)
+    {
+        return Results.NotFound(new { message = "No movies found." });
+    }
+
+    var rng = new Random();
+    var pick = movies[rng.Next(movies.Count)];
+
+    return Results.Ok(new
+    {
+        title = pick.title,
+        overview = pick.overview,
+        poster = pick.poster,
+        rating = pick.rating
+    });
+});
+
+app.MapGet("/users", () =>
+{
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
+    }
+
+    try
+    {
+        var users = new List<string>();
+
+        using var conn = new SqlConnection(connectionString);
+        conn.Open();
+
+        string sql = "SELECT Username FROM Users ORDER BY Username";
+
+        using var cmd = new SqlCommand(sql, conn);
+        using var reader = cmd.ExecuteReader();
+
+        while (reader.Read())
+        {
+            users.Add(reader["Username"].ToString() ?? "");
+        }
+
+        return Results.Ok(users);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+app.MapGet("/watchlist", async (string username) =>
+{
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
+    }
+
+    try
+    {
+        var watchList = new WatchList(connectionString);
+        var items = watchList.GetWatchedList(username);
+        var tmdb = new TMDB();
+
+        var result = new List<object>();
+
+        foreach (var item in items)
+        {
+            string? poster = null;
+
+            try
+            {
+                poster = await tmdb.GetPosterPathByTitleName(item.Title.TitleName);
+            }
+            catch
+            {
+                poster = null;
+            }
+
+            result.Add(new
+            {
+                titleName = item.Title.TitleName,
+                titleType = item.Title.TitleType,
+                averageRating = item.Title.AverageRating,
+                userRating = item.UserRating,
+                watchedDate = item.WatchedDate.ToString("yyyy-MM-dd"),
+                genres = item.Title.Genres,
+                actors = item.Title.Actors,
+                poster = poster
+            });
+        }
+
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
 
 app.Run();

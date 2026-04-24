@@ -50,8 +50,9 @@
 .wl-poster {
     width: 150px;
     height: 220px;
-    border-radius: 10px;
+    border-radius: 18px;
     object-fit: cover;
+    display: block;
 }
 
 /* Arrows */

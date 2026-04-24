@@ -9,8 +9,6 @@ namespace Find_Me_A
 {
     public class Recommendation
     {
-        private static double MultipleScale = 1.5; // scales how much multiple ratings for genres/actors affect reccomendations
-        private static double collectionBonus = 0.5; // bonus added to genres/actors that share a collection with a rated title
         public class WatchedDetail
         {
             public string TitleName { get; set; } = string.Empty;
@@ -75,8 +73,31 @@ namespace Find_Me_A
                         t.ReleaseDate,
                         uwt.WatchedDate,
                         uwt.UserRating,
+<<<<<<< HEAD
                         (SELECT STRING_AGG(CAST(a.ActorID AS NVARCHAR(20)), ', ') FROM (SELECT TOP (20) a2.ActorID FROM TitleActors ta2 JOIN Actors a2 ON ta2.ActorID = a2.ActorID WHERE ta2.TitleID = t.TitleID ORDER BY a2.ActorID) a) AS ActorIds,
                         (SELECT STRING_AGG(CAST(g.GenreID AS NVARCHAR(20)), ', ') FROM (SELECT TOP (5) g2.GenreID FROM TitleGenres tg2 JOIN Genres g2 ON tg2.GenreID = g2.GenreID WHERE tg2.TitleID = t.TitleID ORDER BY g2.GenreID) g) AS GenreIds
+=======
+                        (
+                            SELECT STRING_AGG(CAST(a.ActorID AS NVARCHAR(20)), ', ')
+                            FROM (
+                                SELECT TOP (20) a2.ActorID
+                                FROM TitleActors ta2
+                                JOIN Actors a2 ON ta2.ActorID = a2.ActorID
+                                WHERE ta2.TitleID = t.TitleID
+                                ORDER BY a2.ActorID
+                            ) a
+                        ) AS ActorIds,
+                        (
+                            SELECT STRING_AGG(CAST(g.GenreID AS NVARCHAR(20)), ', ')
+                            FROM (
+                                SELECT TOP (5) g2.GenreID
+                                FROM TitleGenres tg2
+                                JOIN Genres g2 ON tg2.GenreID = g2.GenreID
+                                WHERE tg2.TitleID = t.TitleID
+                                ORDER BY g2.GenreID
+                            ) g
+                        ) AS GenreIds
+>>>>>>> cee04e7f0d41354559223df5826499b82b1a358b
                     FROM UserWatchedTitles uwt
                     JOIN Users u ON uwt.UserID = u.UserID
                     JOIN Titles t ON uwt.TitleID = t.TitleID

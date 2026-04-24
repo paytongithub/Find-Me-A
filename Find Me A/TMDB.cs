@@ -319,4 +319,87 @@ public class TMDB
         var discoverJson = await client.GetStringAsync(discoverUrl);
         return discoverJson;
     }
+
+    public async Task<string> GetPopularMovies()
+    {
+        var url = $"{baseUrl}/movie/popular?api_key={apiKey}";
+        var response = await client.GetStringAsync(url);
+        return response;
+    }
+
+    public async Task<string> GetTopRatedMovies()
+    {
+        var url = $"{baseUrl}/movie/top_rated?api_key={apiKey}";
+        var response = await client.GetStringAsync(url);
+        return response;
+    }
+
+    public async Task<string> GetTrendingMovies()
+    {
+        var url = $"{baseUrl}/trending/movie/week?api_key={apiKey}";
+        var response = await client.GetStringAsync(url);
+        return response;
+    }
+
+    public async Task<string> DiscoverMoviesByGenre(int genreId)
+    {
+        var url = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={genreId}&sort_by=popularity.desc";
+        var response = await client.GetStringAsync(url);
+        return response;
+    }
+
+    public async Task<string> DiscoverMoviesByActor(int actorId)
+    {
+        var url = $"{baseUrl}/discover/movie?api_key={apiKey}&with_cast={actorId}&sort_by=popularity.desc";
+        var response = await client.GetStringAsync(url);
+        return response;
+    }
+
+    public async Task<string?> GetPosterPathByTitleName(string titleName)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
+
+        if (string.IsNullOrWhiteSpace(titleName))
+            return null;
+
+        var encoded = Uri.EscapeDataString(titleName);
+
+        // Try movie first
+        var movieSearchUrl = $"{baseUrl}/search/movie?api_key={apiKey}&query={encoded}";
+        var movieSearchJson = await client.GetStringAsync(movieSearchUrl);
+
+        using (var doc = JsonDocument.Parse(movieSearchJson))
+        {
+            var root = doc.RootElement;
+            if (root.TryGetProperty("results", out var results) && results.GetArrayLength() > 0)
+            {
+                var first = results[0];
+                if (first.TryGetProperty("poster_path", out var posterProp) && posterProp.ValueKind != JsonValueKind.Null)
+                {
+                    return posterProp.GetString();
+                }
+            }
+        }
+
+        // Try TV if movie search failed
+        var tvSearchUrl = $"{baseUrl}/search/tv?api_key={apiKey}&query={encoded}";
+        var tvSearchJson = await client.GetStringAsync(tvSearchUrl);
+
+        using (var doc = JsonDocument.Parse(tvSearchJson))
+        {
+            var root = doc.RootElement;
+            if (root.TryGetProperty("results", out var results) && results.GetArrayLength() > 0)
+            {
+                var first = results[0];
+                if (first.TryGetProperty("poster_path", out var posterProp) && posterProp.ValueKind != JsonValueKind.Null)
+                {
+                    return posterProp.GetString();
+                }
+            }
+        }
+
+        return null;
+    }
+
 }
