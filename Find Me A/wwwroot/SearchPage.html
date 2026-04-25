@@ -12,19 +12,14 @@
         <h1 class="sp-logo">Find Me A</h1>
 
         <div class="sp-search-bar">
-            <input type="text" class="sp-search-input" placeholder="Search movies, shows, genres...">
-            <button class="sp-search-btn">Search</button>
+            <input id="searchInput" type="text" class="sp-search-input" placeholder="Search movies, shows, genres...">
+            <button id="searchBtn" class="sp-search-btn">Search</button>
         </div>
     </header>
 
     <main class="sp-main">
-
         <h2 class="sp-section-title">Results</h2>
-
-        <div class="sp-grid" id="results-grid">
-            <!-- JS inserts results -->
-        </div>
-
+        <div class="sp-grid" id="resultsContainer"></div>
     </main>
 
     <nav class="sp-bottom-nav">
@@ -35,24 +30,73 @@
         <a href="ProfilePage.html">Profile</a>
     </nav>
 
-    <script>const mockResults = [
-            "https://via.placeholder.com/150x220?text=Result+1",
-            "https://via.placeholder.com/150x220?text=Result+2",
-            "https://via.placeholder.com/150x220?text=Result+3",
-            "https://via.placeholder.com/150x220?text=Result+4"
-        ];
+    <script>
+        const searchBtn = document.getElementById("searchBtn");
+        const searchInput = document.getElementById("searchInput");
+        const resultsContainer = document.getElementById("resultsContainer");
 
-        function loadResults() {
-            const grid = document.getElementById("results-grid");
-            mockResults.forEach(src => {
-                const img = document.createElement("img");
-                img.src = src;
-                img.className = "sp-poster";
-                grid.appendChild(img);
-            });
+        const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+
+        function createMovieCard(movie) {
+            const card = document.createElement("div");
+            card.className = "sp-card";
+
+            const posterUrl = movie.poster
+                ? `${IMAGE_BASE_URL}${movie.poster}`
+                : "";
+
+            card.innerHTML = `
+                ${
+                    posterUrl
+                        ? `<img src="${posterUrl}" alt="${movie.title}" class="sp-poster">`
+                        : `<div class="sp-poster sp-placeholder">No Image</div>`
+                }
+                <h3 class="sp-title">${movie.title ?? "Untitled"}</h3>
+                <p class="sp-rating">⭐ ${movie.rating ?? "N/A"}</p>
+            `;
+            return card;
         }
 
-        loadResults();</script>
+        async function searchMovies() {
+            const query = searchInput.value.trim();
+
+            if (!query) {
+                resultsContainer.innerHTML = "<p>Please enter a movie title.</p>";
+                return;
+            }
+
+            try {
+                const response = await fetch(`/search?query=${encodeURIComponent(query)}`);
+
+                if (!response.ok) {
+                    throw new Error("Search request failed.");
+                }
+
+                const movies = await response.json();
+                resultsContainer.innerHTML = "";
+
+                if (!movies || movies.length === 0) {
+                    resultsContainer.innerHTML = "<p>No results found.</p>";
+                    return;
+                }
+
+                movies.forEach(movie => {
+                    resultsContainer.appendChild(createMovieCard(movie));
+                });
+            } catch (error) {
+                resultsContainer.innerHTML = `<p>Error: ${error.message}</p>`;
+                console.error(error);
+            }
+        }
+
+        searchBtn.addEventListener("click", searchMovies);
+
+        searchInput.addEventListener("keypress", function (event) {
+            if (event.key === "Enter") {
+                searchMovies();
+            }
+        });
+    </script>
 
 </body>
 </html>

@@ -23,7 +23,7 @@
 
 .sp-search-input {
     flex: 1;
-    padding: 10px;
+    padding: 12px;
     border-radius: 8px;
     border: none;
 }
@@ -45,24 +45,50 @@
 .sp-section-title {
     color: gold;
     font-size: 20px;
-    margin-bottom: 15px;
+    margin-bottom: 18px;
 }
 
-/* Results Grid */
 .sp-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 22px;
+}
+
+.sp-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
 }
 
 .sp-poster {
     width: 100%;
     height: 220px;
-    border-radius: 10px;
+    border-radius: 12px;
     object-fit: cover;
 }
 
-/* Bottom Nav */
+.sp-placeholder {
+    background: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+}
+
+.sp-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.sp-rating {
+    font-size: 14px;
+    color: #f5c518;
+    margin: 0;
+}
+
 .sp-bottom-nav {
     position: fixed;
     bottom: 0;
@@ -73,13 +99,13 @@
     padding: 12px 0;
 }
 
-    .sp-bottom-nav a {
-        color: white;
-        text-decoration: none;
-        font-size: 13px;
-    }
+.sp-bottom-nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+}
 
-        .sp-bottom-nav a.active {
-            color: gold;
-            font-weight: bold;
-        }
+.sp-bottom-nav a.active {
+    color: gold;
+    font-weight: bold;
+}

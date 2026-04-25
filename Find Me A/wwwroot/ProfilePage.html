@@ -14,17 +14,15 @@
 
     <main class="pf-main">
 
-        <!-- USER INFO -->
         <div class="pf-user-section">
             <div class="pf-avatar"></div>
 
-            <h2 class="pf-username">User</h2>
+            <h2 class="pf-username">Loading...</h2>
 
-            <p class="pf-stats">28 reviews</p>
-            <p class="pf-stats pink">Top Genre Watched: Comedy</p>
+            <p class="pf-stats">Loading watch history...</p>
+            <p class="pf-stats pink" id="topGenreText">Top Genre Watched: Loading...</p>
         </div>
 
-        <!-- WATCHLIST SECTION -->
         <section class="pf-section">
             <h2 class="pf-section-title">Watchlist</h2>
 
@@ -39,7 +37,6 @@
             </div>
         </section>
 
-        <!-- SEEN & REVIEWED SECTION -->
         <section class="pf-section">
             <h2 class="pf-section-title">Seen & Reviewed</h2>
 
@@ -64,35 +61,88 @@
         <a href="ProfilePage.html" class="active">Profile</a>
     </nav>
 
-    <script>// Mock data for now
-        const watchlistData = [
-            "https://via.placeholder.com/150x220?text=The+Recruit",
-            "https://via.placeholder.com/150x220?text=Hudson+%26+Rex",
-            "https://via.placeholder.com/150x220?text=Cabin+10"
-        ];
+    <script>
+        const username = localStorage.getItem("username");
 
-        const seenData = [
-            "https://via.placeholder.com/150x220?text=Don%27t+Move",
-            "https://via.placeholder.com/150x220?text=Bridgerton",
-            "https://via.placeholder.com/150x220?text=School+Spirits"
-        ];
+        if (!username) {
+            window.location.href = "LoginPage.html";
+        }
 
-        function loadCarousel(id, data) {
-            const container = document.getElementById(id);
-            data.forEach(src => {
-                const img = document.createElement("img");
-                img.src = src;
-                img.className = "pf-poster";
-                container.appendChild(img);
-            });
+        const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w200";
+
+        document.querySelector(".pf-username").textContent = username;
+
+        const avatar = document.querySelector(".pf-avatar");
+        avatar.style.backgroundImage = `url("https://api.dicebear.com/8.x/thumbs/svg?seed=${encodeURIComponent(username)}")`;
+        avatar.style.backgroundSize = "cover";
+        avatar.style.backgroundPosition = "center";
+
+
+        async function loadProfileWatchlist() {
+            try {
+                const response = await fetch(`/watchlist?username=${encodeURIComponent(username)}`);
+
+                if (!response.ok) {
+                    throw new Error("Failed to load profile watchlist");
+                }
+
+                const data = await response.json();
+
+                const watchlist = document.getElementById("watchlist");
+                const seen = document.getElementById("seen");
+
+                watchlist.innerHTML = "";
+                seen.innerHTML = "";
+
+                document.querySelector(".pf-stats").textContent = `${data.length} watched`;
+
+                const genreCounts = {};
+
+                data.forEach(item => {
+                    if (item.genres) {
+                        item.genres.forEach(genre => {
+                            genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+                        });
+                    }
+
+                    const img = document.createElement("img");
+                    img.className = "pf-poster";
+                    img.alt = item.titleName;
+
+                    img.src = item.poster
+                        ? `${IMAGE_BASE_URL}${item.poster}`
+                        : "https://via.placeholder.com/150x220?text=No+Image";
+
+                    watchlist.appendChild(img);
+
+                    if (item.userRating) {
+                        const reviewedImg = img.cloneNode();
+                        seen.appendChild(reviewedImg);
+                    }
+                });
+
+                const topGenre = Object.keys(genreCounts)
+                    .sort((a, b) => genreCounts[b] - genreCounts[a])[0];
+
+                document.getElementById("topGenreText").textContent =
+                    topGenre ? `Top Genre Watched: ${topGenre}` : "Top Genre Watched: None yet";
+
+            } catch (error) {
+                console.error(error);
+                document.querySelector(".pf-stats").textContent = "Could not load profile data.";
+                document.getElementById("topGenreText").textContent = "";
+            }
         }
 
         function scrollCarousel(id, amount) {
-            document.getElementById(id).scrollBy({ left: amount, behavior: "smooth" });
+            document.getElementById(id).scrollBy({
+                left: amount,
+                behavior: "smooth"
+            });
         }
 
-        loadCarousel("watchlist", watchlistData);
-        loadCarousel("seen", seenData);</script>
+        loadProfileWatchlist();
+    </script>
 
 </body>
 </html>

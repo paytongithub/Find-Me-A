@@ -316,7 +316,6 @@ app.MapGet("/featured", async (string username) =>
             .Select(movie => new
             {
                 title = movie.GetProperty("title").GetString(),
-                overview = movie.GetProperty("overview").GetString(),
                 poster = movie.GetProperty("poster_path").GetString(),
                 rating = movie.GetProperty("vote_average").GetDouble()
             });
@@ -403,7 +402,6 @@ app.MapGet("/top-picks", async (string username) =>
             .Select(movie => new
             {
                 title = movie.GetProperty("title").GetString(),
-                overview = movie.GetProperty("overview").GetString(),
                 poster = movie.GetProperty("poster_path").GetString(),
                 rating = movie.GetProperty("vote_average").GetDouble()
             });
@@ -575,3 +573,11 @@ app.MapGet("/watchlist", async (string username) =>
 
 
 app.Run();
+
+internal static class TestRunner
+{
+   public static System.Threading.Tasks.Task<string> RunAllTestsAsync(string connectionString)
+   {
+       return System.Threading.Tasks.Task.FromResult("Test runner is unavailable in this build.");
+   }
+}
