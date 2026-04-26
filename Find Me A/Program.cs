@@ -117,7 +117,7 @@ app.MapGet("/details", async (string title) =>
     try { t = await tmdb.GetTitleByName(title); } catch { }
 
     var sb = new System.Text.StringBuilder();
-    sb.Append("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Details</title><link rel=\"stylesheet\" href=\"DetailsPage.css\"></head><body class=\"dt-body\">");
+    sb.Append("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Details</title><link rel=\"stylesheet\" href=\"css/DetailsPage.css\"></head><body class=\"dt-body\">");
     sb.Append("<header class=\"dt-header\"><button class=\"dt-back-btn\" onclick=\"history.back()\">❮ Back</button></header><main class=\"dt-main\">");
 
     if (t != null)

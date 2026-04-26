@@ -2,19 +2,36 @@
 .pf-body {
     background-color: #3f3937;
     color: white;
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     padding-bottom: 80px;
 }
 
-.header-logo img {
-    width: 120px;
-    height: auto;
-}
-.header-logo {
-    margin-bottom: 10px;
+.pf-header {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 21px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
 }
 
+    .pf-header h1 {
+        margin: 0;
+        font-size: 32px;
+    }
+
+.header-logo {
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    margin: 0;
+}
+
+    .header-logo img {
+        width: 120px;
+        height: auto;
+    }
 
 /* User Section */
 .pf-user-section {
@@ -51,9 +68,9 @@
     transition: 0.2s ease;
 }
 
-.logout-btn:hover {
-    background-color: #c96c6c;
-}
+    .logout-btn:hover {
+        background-color: #c96c6c;
+    }
 
 
 .pf-stats {

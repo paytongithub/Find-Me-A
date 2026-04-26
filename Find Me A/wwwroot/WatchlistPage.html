@@ -4,153 +4,17 @@
     <meta charset="utf-8" />
     <title>Find Me A – Watchlist</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="Theme.css">
-    <link rel="stylesheet" href="WatchlistPage.css">
+    <link rel="stylesheet" href="css/Theme.css">
+    <link rel="stylesheet" href="css/WatchlistPage.css">
 </head>
-<style>
-    .wl-body {
-        background: #3f3937;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-        font-family: 'Poppins', sans-serif;
-        color: #fff;
-    }
-
-    .wl-header {
-        background: rgba(0, 0, 0, 0.3);
-        padding: 20px;
-        text-align: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-        .wl-header h1 {
-            margin: 0;
-            font-size: 28px;
-        }
-
-    .wl-main {
-        flex: 1;
-        padding: 30px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 20px;
-        align-content: flex-start;
-        justify-content: flex-start;
-        overflow-y: auto;
-    }
-
-    .wl-tile {
-        width: 150px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .wl-poster {
-        width: 150px;
-        height: 220px;
-        object-fit: cover;
-        border-radius: 8px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    .wl-poster-placeholder {
-        width: 150px;
-        height: 220px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 48px;
-        border: 2px dashed rgba(255, 255, 255, 0.3);
-    }
-
-    .wl-rating {
-        text-align: center;
-        font-weight: 600;
-        font-size: 14px;
-        color: #ffd700;
-    }
-
-    .wl-buttons {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        width: 100%;
-    }
-
-    .wl-btn {
-        width: 100%;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .wl-edit-btn {
-        background: gold;
-        color: black;
-    }
-
-        .wl-edit-btn:hover {
-            opacity: 0.95;
-            transform: translateY(-2px);
-        }
-
-    .wl-delete-btn {
-        background: black;
-        color: gold;
-    }
-
-        .wl-delete-btn:hover {
-            opacity: 0.95;
-            transform: translateY(-2px);
-        }
-
-    .empty-message {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        opacity: 0.6;
-    }
-
-    .wl-add-wrapper {
-        padding: 15px 30px;
-        display: flex;
-        justify-content: center;
-    }
-
-    .wl-add-btn {
-        padding: 10px 30px;
-        background: gold;
-        color: black;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-        .wl-add-btn:hover {
-            opacity: 0.95;
-            transform: translateY(-2px);
-        }
-</style>
 
 <body class="wl-body">
 
     <header class="wl-header">
         <h1>My Watchlist</h1>
+        <div class="header-logo">
+            <img src="logo.png" alt="Find Me A">
+        </div>
     </header>
 
     <div class="wl-add-wrapper">
@@ -182,6 +46,7 @@
             </svg>
             <span>Watchlist</span>
         </a>
+        <!--
         <a href="ReviewPage.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
                 <path d="M4 20l4-1 10-10-3-3L5 16l-1 4z" stroke="currentColor" stroke-width="2" fill="none" />
@@ -189,6 +54,7 @@
             </svg>
             <span>Reviews</span>
         </a>
+        -->
         <a href="ProfilePage.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
                 <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none" />
@@ -235,16 +101,16 @@
                         : "No rating";
 
                     tile.innerHTML = `
-                            ${posterUrl
+                                ${posterUrl
                             ? `<img src="${posterUrl}" class="wl-poster" alt="${item.titleName}" title="${item.titleName}">`
                             : `<div class="wl-poster-placeholder">🎬</div>`
                         }
-                            <div class="wl-rating">${stars}</div>
-                            <div class="wl-buttons">
-                                <button class="wl-btn wl-edit-btn" onclick="changeRating('${item.titleName.replace(/'/g, "\\'")}')">Edit</button>
-                                <button class="wl-btn wl-delete-btn" onclick="deleteFilm('${item.titleName.replace(/'/g, "\\'")}')">Delete</button>
-                            </div>
-                        `;
+                                <div class="wl-rating">${stars}</div>
+                                <div class="wl-buttons">
+                                    <button class="wl-btn wl-edit-btn" onclick="changeRating('${item.titleName.replace(/'/g, "\\'")}')">Edit</button>
+                                    <button class="wl-btn wl-delete-btn" onclick="deleteFilm('${item.titleName.replace(/'/g, "\\'")}')">Delete</button>
+                                </div>
+                            `;
 
                     container.appendChild(tile);
                 });
