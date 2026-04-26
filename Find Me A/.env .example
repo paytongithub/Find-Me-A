@@ -1,2 +1,2 @@
-TMDB_API_KEY=api_key_here
-DB_CONNECTION="Server=147.126.2.58,1433;Database=Find_Me_A;User ID=YOUR_ID;Password=YOUR_PASSWORD;Encrypt=True;TrustServerCertificate=True;"
+TMDB_API_KEY=1e5930199c998a5b6bbd96a8ca628acc
+DB_CONNECTION="Server=147.126.2.58,1433;Database=Find_Me_A;User ID=Gaby;Password=12345678;Encrypt=True;TrustServerCertificate=True;"

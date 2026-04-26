@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Linq;
 using Microsoft.Data.SqlClient;
 using DotNetEnv;
+using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
@@ -57,11 +58,28 @@ app.MapPost("/register", (HttpContext ctx) =>
 app.MapGet("/search", async (string query) =>
 {
     var tmdb = new TMDB();
-    var json = await tmdb.SearchAll(query);
 
-    var data = JsonDocument.Parse(json);
+    //known genres you want to support
+    string[] knownGenres =
+    {
+        "Action", "Comedy", "Horror", "Romance",
+        "Animation", "Science Fiction", "Sci-Fi",
+        "Anime", "Rom-Com"
+    };
 
-    var movies = data.RootElement
+    //Genre search branch
+    if (knownGenres.Contains(query, StringComparer.OrdinalIgnoreCase))
+    {
+        var genreJson = await tmdb.DiscoverByGenre(new[] { query });
+        var genreResults = ParseDiscoverResults(genreJson);
+        return Results.Ok(genreResults);
+    }
+
+    //Fallback: TMDB multi-search
+    var Searchjson = await tmdb.SearchAll(query);
+    var data = JsonDocument.Parse(Searchjson);
+
+    var moviesResults = data.RootElement
         .GetProperty("results")
         .EnumerateArray()
         .Where(item =>
@@ -92,8 +110,35 @@ app.MapGet("/search", async (string query) =>
 
         });
 
-    return movies;
+    return Results.Ok(moviesResults);
 });
+
+//helper method
+static IEnumerable<object> ParseDiscoverResults(string json)
+{
+    var data = JsonDocument.Parse(json);
+
+    return data.RootElement
+        .GetProperty("results")
+        .EnumerateArray()
+        .Select(item => new
+        {
+            id = item.GetProperty("id").GetInt32(),
+            mediaType = "movie",
+            title = item.GetProperty("title").GetString(),
+            overview = item.TryGetProperty("overview", out var overview)
+            ? overview.GetString()
+            : "",
+            poster = item.TryGetProperty("poster_path", out var poster) 
+            && poster.ValueKind != JsonValueKind.Null
+            ? poster.GetString()
+            : "",
+            rating = item.TryGetProperty("vote_average", out var rating) 
+            ? rating.GetDouble()
+            : 0,
+        });
+
+};
 
 // Run automated tests (returns plain text). Respects RUN_TESTS_ALLOW_DB_WRITE env var inside tests.
 app.MapGet("/run-tests", async () =>
