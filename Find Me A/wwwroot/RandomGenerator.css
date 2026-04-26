@@ -1,6 +1,6 @@
 ﻿/* Base */
 .rg-body {
-    background-color: #0d0d0d;
+    background-color: #3f3937;
     color: white;
     font-family: Arial, sans-serif;
     margin: 0;
@@ -113,23 +113,6 @@
     font-size: 14px;
     color: #ffb6c1;
 }
-
-/* Bottom nav */
-.rg-bottom-nav {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background-color: #1a1a1a;
-    display: flex;
-    justify-content: space-around;
-    padding: 12px 0;
-}
-
-    .rg-bottom-nav a {
-        color: white;
-        text-decoration: none;
-        font-size: 13px;
-    }
 
 .rg-result {
     margin-top: 30px;

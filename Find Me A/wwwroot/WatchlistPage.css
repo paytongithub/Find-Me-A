@@ -1,6 +1,6 @@
 ﻿/* Base */
 .wl-body {
-    background-color: #0d0d0d;
+    background-color: #3f3937;
     color: white;
     font-family: Arial, sans-serif;
     margin: 0;
@@ -9,14 +9,19 @@
 
 /* Header */
 .wl-header {
-    padding: 20px;
-    text-align: center;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   position:relative;
+   padding: 20px 24px;
+   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.wl-logo {
-    color: gold;
-    font-size: 28px;
-    margin: 0;
+.header-logo img {
+    width: 90px;
+}
+.header-logo {
+    margin-bottom: 10px;
 }
 
 /* Sections */
@@ -24,77 +29,124 @@
     margin: 20px;
 }
 
-.wl-section-title {
+.wl-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: 600;;
+}
+
+.wl-add-wrapper {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0 30px;
+}
+.wl-add-btn {
+    background: #c87575;
+    border: none;
+    color: #fff8ef;
+    padding: 14px 40px;
+    border-radius: 999px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.wl-add-btn:hover {
+    background: #d98b8b;
+}
+.wl-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 20px;
+}
+
+.wl-card{
+    display: flex;
+    gap: 20px;
+    width: 80%;
+    max-width: 700px;
+    background: #4a4341;
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.wl-card-left{
+    flex-shrink: 0;
+}
+
+.wl-card-right{
+    flex: 1;
+}
+
+.wl-movie-title {
+    font-size: 22px;
+    font-weight: 700;
     color: gold;
-    font-size: 20px;
+}
+
+.wl-chip{
+    background: #5a514e;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+
+.section-title, .wl-title {
+    font-weight: 700;
+}
+.wl-add-wrapper{
     margin-bottom: 10px;
 }
 
-/* Carousel */
-.wl-carousel-container {
-    position: relative;
+.wl-rating{
+    margin-top: 12px;
 }
-
-.wl-carousel {
+.wl-actions {
     display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    padding-bottom: 10px;
+    gap: 12px;
+    margin-top: 12px;
 }
 
-    .wl-carousel::-webkit-scrollbar {
-        display: none;
-    }
-
-.wl-poster {
-    width: 150px;
-    height: 220px;
-    border-radius: 18px;
-    object-fit: cover;
-    display: block;
-}
-
-/* Arrows */
-.wl-arrow {
-    position: absolute;
-    top: 40%;
-    transform: translateY(-50%);
-    background-color: rgba(0,0,0,0.6);
-    border: 1px solid gold;
-    color: gold;
-    padding: 8px 12px;
-    border-radius: 6px;
+.wl-edit-btn {
+    background: #5a514e;
+    color: #fff8ef;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
     cursor: pointer;
-    font-size: 18px;
+    transition: all 0.2s ease;
 }
 
-    .wl-arrow.left {
-        left: -5px;
-    }
-
-    .wl-arrow.right {
-        right: -5px;
-    }
-
-/* Bottom Navigation */
-.wl-bottom-nav {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background-color: #1a1a1a;
-    display: flex;
-    justify-content: space-around;
-    padding: 12px 0;
+.wl-edit-btn:hover {
+    background: #6a605c;
 }
 
-    .wl-bottom-nav a {
-        color: white;
-        text-decoration: none;
-        font-size: 13px;
-    }
 
-        .wl-bottom-nav a.active {
-            color: gold;
-            font-weight: bold;
-        }
+.wl-delete-btn {
+    background: #c87575;
+    color: #fff8ef;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.wl-delete-btn:hover {
+    background: #d98b8b;
+}
+
+.wl-edit-btn:active,
+.wl-delete-btn:active {
+    transform: scale(0.96);
+}
+

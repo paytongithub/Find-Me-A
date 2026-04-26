@@ -1,6 +1,6 @@
 ﻿/* Base */
 .rv-body {
-    background-color: #0d0d0d;
+    background-color: #3f3937;
     color: white;
     font-family: Arial, sans-serif;
     margin: 0;
@@ -120,25 +120,3 @@
         background-color: gold;
         color: black;
     }
-
-/* Bottom Nav */
-.rv-bottom-nav {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background-color: #1a1a1a;
-    display: flex;
-    justify-content: space-around;
-    padding: 12px 0;
-}
-
-    .rv-bottom-nav a {
-        color: white;
-        text-decoration: none;
-        font-size: 13px;
-    }
-
-        .rv-bottom-nav a.active {
-            color: gold;
-            font-weight: bold;
-        }

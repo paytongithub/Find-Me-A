@@ -1,19 +1,17 @@
 ﻿.sp-body {
-    background-color: #0d0d0d;
+    background-color: #3f3937;
     color: white;
     font-family: Arial, sans-serif;
     margin: 0;
     padding-bottom: 80px;
 }
 
-.sp-header {
-    padding: 20px;
+.header-logo img {
+    width: 120px;
+    height: auto;
 }
-
-.sp-logo {
-    color: gold;
-    font-size: 28px;
-    margin: 0 0 10px 0;
+.header-logo {
+    margin-bottom: 10px;
 }
 
 .sp-search-bar {
@@ -89,23 +87,51 @@
     margin: 0;
 }
 
-.sp-bottom-nav {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background-color: #1a1a1a;
+.empty-state {
     display: flex;
-    justify-content: space-around;
-    padding: 12px 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 80px;
+    text-align: center;
+    color: #fff8ef;
 }
 
-.sp-bottom-nav a {
-    color: white;
-    text-decoration: none;
+.empty-icon {
+    font-size: 50px;
+    margin-bottom: 20px;
+    opacity: 0.7;
+}
+
+.empty-state h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: #cfc7c4;
+    margin-bottom: 20px;
+}
+
+.empty-suggestions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.empty-suggestions button {
+    background: #5a514e;
+    color: #fff8ef;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
     font-size: 13px;
 }
 
-.sp-bottom-nav a.active {
-    color: gold;
-    font-weight: bold;
+.empty-suggestions button:hover {
+    background: #6a605c;
 }
+
+
