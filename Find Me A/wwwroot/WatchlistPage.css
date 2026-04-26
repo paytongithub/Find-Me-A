@@ -1,152 +1,137 @@
-﻿/* Base */
-.wl-body {
-    background-color: #3f3937;
-    color: white;
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding-bottom: 80px;
-}
-
-/* Header */
-.wl-header {
-   display: flex;
-   align-items: center;
-   justify-content: space-between;
-   position:relative;
-   padding: 20px 24px;
-   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.header-logo img {
-    width: 90px;
-}
-.header-logo {
-    margin-bottom: 10px;
-}
-
-/* Sections */
-.wl-section {
-    margin: 20px;
-}
-
-.wl-title {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 28px;
-    font-weight: 600;;
-}
-
-.wl-add-wrapper {
+﻿.wl-body {
+    background: #3f3937;
+    min-height: 100vh;
     display: flex;
-    justify-content: center;
-    margin: 20px 0 30px;
-}
-.wl-add-btn {
-    background: #c87575;
-    border: none;
-    color: #fff8ef;
-    padding: 14px 40px;
-    border-radius: 999px;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
+    flex-direction: column;
+    font-family: 'Poppins', sans-serif;
+    color: #fff;
 }
 
-.wl-add-btn:hover {
-    background: #d98b8b;
+.wl-header {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+    .wl-header h1 {
+        margin: 0;
+        font-size: 28px;
+    }
+
 .wl-main {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-content: flex-start;
+    justify-content: flex-start;
+    overflow-y: auto;
+}
+
+.wl-tile {
+    width: 150px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 24px;
-    padding: 20px;
+    gap: 10px;
 }
 
-.wl-card{
+.wl-poster {
+    width: 150px;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.wl-poster-placeholder {
+    width: 150px;
+    height: 220px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     display: flex;
-    gap: 20px;
-    width: 80%;
-    max-width: 700px;
-    background: #4a4341;
-    padding: 20px;
-    border-radius: 20px;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
 }
 
-.wl-card-left{
-    flex-shrink: 0;
+.wl-rating {
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #ffd700;
 }
 
-.wl-card-right{
-    flex: 1;
+.wl-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
 }
 
-.wl-movie-title {
-    font-size: 22px;
-    font-weight: 700;
-    color: gold;
-}
-
-.wl-chip{
-    background: #5a514e;
+.wl-btn {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
     font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 999px;
-}
-
-
-.section-title, .wl-title {
-    font-weight: 700;
-}
-.wl-add-wrapper{
-    margin-bottom: 10px;
-}
-
-.wl-rating{
-    margin-top: 12px;
-}
-.wl-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .wl-edit-btn {
-    background: #5a514e;
-    color: #fff8ef;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    background: gold;
+    color: black;
 }
 
-.wl-edit-btn:hover {
-    background: #6a605c;
-}
-
+    .wl-edit-btn:hover {
+        opacity: 0.95;
+        transform: translateY(-2px);
+    }
 
 .wl-delete-btn {
-    background: #c87575;
-    color: #fff8ef;
+    background: black;
+    color: gold;
+}
+
+    .wl-delete-btn:hover {
+        opacity: 0.95;
+        transform: translateY(-2px);
+    }
+
+.empty-message {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    opacity: 0.6;
+}
+
+.wl-add-wrapper {
+    padding: 15px 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.wl-add-btn {
+    padding: 10px 30px;
+    background: gold;
+    color: black;
     border: none;
-    padding: 8px 16px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: 500;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
 }
 
-.wl-delete-btn:hover {
-    background: #d98b8b;
-}
-
-.wl-edit-btn:active,
-.wl-delete-btn:active {
-    transform: scale(0.96);
-}
-
+    .wl-add-btn:hover {
+        opacity: 0.95;
+        transform: translateY(-2px);
+    }
