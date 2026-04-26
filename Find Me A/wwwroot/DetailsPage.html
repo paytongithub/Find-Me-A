@@ -3,6 +3,8 @@
 <head>
     <meta charset="utf-8" />
     <title>Find Me A – Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="Theme.css">
     <link rel="stylesheet" href="DetailsPage.css">
 </head>
 
@@ -13,34 +15,43 @@
     </header>
 
     <main class="dt-main">
-
-        <img src="https://via.placeholder.com/300x450?text=Poster" class="dt-poster">
-
-        <h1 class="dt-title">Movie Title</h1>
-        <p class="dt-subinfo">2023 • PG-13 • Action, Sci-Fi</p>
-
-        <button class="dt-watchlist-btn">+ Add to Watchlist</button>
-
-        <p class="dt-summary">
-            This is a placeholder summary. When the API is ready, this will show the movie’s description.
-        </p>
-
-        <h2 class="dt-section-title">Recommended for You</h2>
-
-        <div class="dt-carousel-container">
-            <button class="dt-arrow left" onclick="scrollCarousel(-300)">❮</button>
-
-            <div class="dt-carousel" id="dt-recommend">
-                <!-- JS inserts posters -->
+        <div class="dt-top">
+            <div class="dt-poster-container">
+                <img class="dt-poster">
             </div>
 
-            <button class="dt-arrow right" onclick="scrollCarousel(300)">❯</button>
+            <div class="dt-info">
+                <div class="dt-title-row">
+                    <h1 class="dt-title"></h1>
+
+                    <button class="dt-watchlist-icon-btn" id="watchlistBtn" title="Add to Watchlist">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <p class="dt-subinfo"></p>
+                <p class="dt-summary" id="overviewTest"></p>
+            </div>
+        </div>
+
+        <div class="dt-bottom">
+            <div class="dt-cast">
+                <h3 class="dt-section-title">Cast</h3>
+                <div id="actorList" class="dt-actors"></div>
+            </div>
+
+            <div class="dt-trailer">
+                <h3 class="dt-section-title">Trailer</h3>
+                <div id="trailerContainer"></div>
+            </div>
         </div>
 
     </main>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="active">
+        <a href="index.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" fill="none"/>
             <path d="M5 10v10h14V10" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -76,27 +87,88 @@
         </a>
     </nav>
 
-    <script>const recData = [
-            "https://via.placeholder.com/150x220?text=Rec+1",
-            "https://via.placeholder.com/150x220?text=Rec+2",
-            "https://via.placeholder.com/150x220?text=Rec+3"
-        ];
+    <script>
+        const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
-        function loadRecs() {
-            const container = document.getElementById("dt-recommend");
-            recData.forEach(src => {
-                const img = document.createElement("img");
-                img.src = src;
-                img.className = "dt-poster-small";
-                container.appendChild(img);
-            });
+        async function loadDetails() {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get("id");
+            const type = params.get("type");
+
+            if (!id || !type) {
+                document.querySelector(".dt-title").textContent = "Invalid title ID";
+                return;
+            }
+
+            const response = await fetch(`/details-data?id=${id}&type=${type}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                document.querySelector(".dt-title").textContent = "Title not found";
+                return;
+            }
+
+            document.querySelector(".dt-title").textContent = data.titleName;
+
+            document.querySelector(".dt-poster").src = data.posterPath
+                ? `${IMAGE_BASE_URL}${data.posterPath}`
+                : "https://placehold.co/300x450?text=No+Image";
+
+            const year = data.releaseDate ? new Date(data.releaseDate).getFullYear() : "";
+            const genres = data.genres ? data.genres.join(", ") : "";
+
+            document.querySelector(".dt-subinfo").textContent =
+                `${year} • ${data.titleType ?? ""} • ${genres}`;
+
+            document.getElementById("overviewTest").textContent =
+                data.overview || "No description available.";
+
+            const actorList = document.getElementById("actorList");
+            actorList.innerHTML = "";
+
+            if (data.actors && data.actors.length > 0) {
+                data.actors.slice(0, 8).forEach(actor => {
+                    const actorCard = document.createElement("div");
+                    actorCard.className = "actor-card";
+                    actorCard.textContent = actor;
+                    actorList.appendChild(actorCard);
+                });
+            }
+
+            const trailerContainer = document.getElementById("trailerContainer");
+
+            if (data.trailerUrl) {
+                const trailerKey = data.trailerUrl.includes("v=")
+                    ? data.trailerUrl.split("v=")[1]
+                    : data.trailerUrl;
+
+                trailerContainer.innerHTML = `
+                    <iframe
+                        width="100%"
+                        height="260"
+                        src="https://www.youtube.com/embed/${trailerKey}"
+                        frameborder="0"
+                        allowfullscreen>
+                    </iframe>
+                `;
+            } else {
+                trailerContainer.innerHTML = "<p>No trailer available.</p>";
+            }
+
+            document.querySelector(".dt-watchlist-icon-btn").onclick = async () => {
+                const username = localStorage.getItem("username");
+                const rating = prompt("Enter rating 1-10:");
+
+                await fetch(`/watchlist/add?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(data.titleName)}&rating=${encodeURIComponent(rating || 0)}`, {
+                    method: "POST"
+                });
+
+                alert("Added to watchlist!");
+            };
         }
 
-        function scrollCarousel(amount) {
-            document.getElementById("dt-recommend").scrollBy({ left: amount, behavior: "smooth" });
-        }
-
-        loadRecs();</script>
+        loadDetails();
+    </script>
 
 </body>
 </html>

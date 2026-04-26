@@ -1,145 +1,171 @@
-﻿/* Base */
-.rg-body {
+﻿.rg-body {
     background-color: #3f3937;
-    color: white;
-    font-family: Arial, sans-serif;
+    color: #fff8ef;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
-    padding-bottom: 80px;
+    padding-bottom: 90px;
 }
 
-/* Header */
 .rg-header {
-    padding: 20px;
+    padding: 22px 28px 8px;
 }
 
-.rg-logo {
-    color: gold;
-    margin: 0 0 10px 0;
-    font-size: 28px;
+.header-logo img {
+    width: 120px;
+    height: auto;
 }
 
-.rg-search-bar {
-    display: flex;
-    gap: 10px;
-}
-
-.rg-search-input {
-    flex: 1;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-}
-
-.rg-search-btn {
-    padding: 10px 18px;
-    border-radius: 8px;
-    border: none;
-    background-color: gold;
-    color: black;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* Main */
 .rg-main {
-    padding: 20px;
+    padding: 10px 28px 40px;
 }
 
 .rg-title {
-    font-size: 22px;
-    margin-bottom: 15px;
+    text-align: center;
+    font-size: 34px;
+    font-weight: 700;
+    margin: 18px 0 22px;
 }
 
-/* Type toggle */
 .rg-type-toggle {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 14px;
+    margin-bottom: 24px;
 }
 
 .rg-type-btn {
     flex: 1;
-    padding: 10px;
-    border-radius: 20px;
-    border: 1px solid gold;
-    background-color: transparent;
-    color: white;
+    padding: 14px;
+    border-radius: 999px;
+    border: 2px solid #d1b45f;
+    background: transparent;
+    color: #fff8ef;
+    font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
 }
 
-    .rg-type-btn.active {
-        background-color: gold;
-        color: black;
-    }
+.rg-type-btn.active {
+    background: #d1b45f;
+    color: #1f1b1a;
+}
 
-/* Filters */
 .rg-filters {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 25px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
 }
 
 .rg-filter label {
     display: block;
-    font-size: 12px;
-    margin-bottom: 5px;
-    color: #ffebc2;
+    margin-bottom: 6px;
+    color: #fff8ef;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .rg-filter select {
     width: 100%;
-    padding: 8px;
-    border-radius: 8px;
+    padding: 12px 10px;
+    border-radius: 14px;
     border: none;
-}
-
-/* Random button */
-.rg-random-btn {
-    width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: none;
-    background-color: gold;
-    color: black;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-bottom: 15px;
-}
-
-/* Result text */
-.rg-result {
+    background: #cdb86d;
+    color: #fff8ef;
     font-size: 14px;
-    color: #ffb6c1;
+    font-weight: 600;
+    outline: none;
+}
+
+.rg-random-btn {
+    display: block;
+    width: 260px;
+    margin: 0 auto 32px;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 999px;
+    background: #c87575;
+    color: #fff8ef;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.rg-random-btn:hover {
+    background: #d98b8b;
 }
 
 .rg-result {
-    margin-top: 30px;
     display: flex;
     justify-content: center;
+    margin-top: 24px;
 }
 
 .movie-card {
-    max-width: 260px;
-    color: white;
+    width: 320px;
+    background: #4b4341;
+    border-radius: 28px;
+    padding: 20px;
     text-align: center;
+    color: #fff8ef;
 }
 
 .poster {
-    width: 220px;
-    height: 330px;
+    width: 240px;
+    height: 360px;
     object-fit: cover;
-    border-radius: 12px;
+    border-radius: 16px;
 }
 
 .placeholder {
-    width: 220px;
-    height: 330px;
+    width: 240px;
+    height: 360px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #333;
-    color: white;
-    border-radius: 12px;
+    background: #2f2a29;
+    color: #fff8ef;
+    border-radius: 16px;
+    margin: 0 auto;
 }
+
+.movie-card h3 {
+    font-size: 22px;
+    margin: 16px 0 8px;
+}
+
+.movie-card p {
+    font-size: 14px;
+    line-height: 1.45;
+    color: #e8ded8;
+}
+
+.movie-card p:nth-of-type(1) {
+    color: #f5c84b;
+    font-weight: 600;
+}
+
+.rg-filters {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin: 24px 38px 28px;
+}
+
+.rg-filters select {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 999px;
+    border: none;
+    background: #cdb86d;
+    color: #fff8ef;
+    font-family: 'Poppins', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    outline: none;
+}
+
+.rg-filters select:focus {
+    box-shadow: 0 0 0 3px rgba(216, 126, 126, 0.4);
+}
+
+

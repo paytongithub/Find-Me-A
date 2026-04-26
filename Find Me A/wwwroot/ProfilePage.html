@@ -22,7 +22,7 @@
             <div class="pf-avatar"></div>
 
             <h2 class="pf-username">Loading...</h2>
-
+            <button class="logout-btn" onclick="logout()">Log Out</button>
             <p class="pf-stats">Loading watch history...</p>
             <p class="pf-stats pink" id="topGenreText">Top Genre Watched: Loading...</p>
         </div>
@@ -100,6 +100,12 @@
 
         if (!username) {
             window.location.href = "LoginPage.html";
+        }
+
+        function logout() {
+            localStorage.removeItem("username");
+            localStorage.removeItem("userId");
+            window.location.href = "/login";
         }
 
         const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w200";

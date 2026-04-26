@@ -9,43 +9,36 @@
 
 <body class="rg-body">
 
-    <header class="rg-header">
-        <h1 class="rg-logo">Find Me A</h1>
+    <header class="wl-header">
+        <div class="header-logo">
+            <img src="logo.png" alt="Find Me A">
+            </div>
     </header>
 
     <main class="rg-main">
-        <h2 class="rg-title">Find Me A...</h2>
-
         <div class="rg-type-toggle">
-            <button class="rg-type-btn active">Movie</button>
-            <button class="rg-type-btn">TV Show</button>
+            <button id="movieBtn" class="rg-type-btn active" type="button">Movie</button>
+            <button id="tvBtn" class="rg-type-btn" type="button">TV Show</button>
         </div>
-
         <div class="rg-filters">
-            <div class="rg-filter">
-                <label>Genre</label>
+          <div class="rg-filter">
+            <label>Genre</label>
                 <select id="genreSelect">
                     <option>All</option>
                     <option>Action</option>
                     <option>Comedy</option>
                     <option>Drama</option>
                     <option>Horror</option>
-                </select>
-            </div>
-
-            <div class="rg-filter">
-                <label>Sub-Genre</label>
-                <select>
-                    <option>All</option>
-                    <option>Rom-Com</option>
-                    <option>Thriller</option>
+                    <option>Romance</option>
                     <option>Sci-Fi</option>
+                    <option>Thriller</option>
+                    <option>Animation</option>
                 </select>
             </div>
 
             <div class="rg-filter">
                 <label>Year</label>
-                <select>
+                <select id="yearSelect">
                     <option>All</option>
                     <option>2020s</option>
                     <option>2010s</option>
@@ -53,21 +46,22 @@
                     <option>90s</option>
                 </select>
             </div>
-
+            
             <div class="rg-filter">
-                <label>Streaming Provider</label>
-                <select>
+                <label>Provider</label>
+                <select id="providerSelect">
                     <option>All</option>
                     <option>Netflix</option>
                     <option>Hulu</option>
                     <option>Prime Video</option>
                     <option>Disney+</option>
+                    <option>HBO Max</option>
                 </select>
             </div>
 
             <div class="rg-filter">
                 <label>Rating</label>
-                <select>
+                <select id="ratingSelect">
                     <option>All</option>
                     <option>G</option>
                     <option>PG</option>
@@ -76,14 +70,13 @@
                 </select>
             </div>
         </div>
-
         <button class="rg-random-btn" onclick="randomize()">Randomize</button>
 
         <div id="rg-result" class="rg-result"></div>
     </main>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="active">
+        <a href="index.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
             <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" fill="none"/>
             <path d="M5 10v10h14V10" stroke="currentColor" stroke-width="2" fill="none"/>
@@ -121,16 +114,43 @@
 
     <script>
         const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+        let selectedType = "movie";
+
+        const movieBtn = document.getElementById("movieBtn");
+        const tvBtn = document.getElementById("tvBtn");
+
+        movieBtn.addEventListener("click", () => {
+            selectedType = "movie";
+            movieBtn.classList.add("active");
+            tvBtn.classList.remove("active");
+        });
+
+        tvBtn.addEventListener("click", () => {
+            selectedType = "tv";
+            tvBtn.classList.add("active");
+            movieBtn.classList.remove("active");
+        });
 
         async function randomize() {
             const genre = document.getElementById("genreSelect").value;
+            const year = document.getElementById("yearSelect").value;
+            const provider = document.getElementById("providerSelect").value;
+            const rating = document.getElementById("ratingSelect").value;
+
             const resultContainer = document.getElementById("rg-result");
 
+            const url =
+                `/random?type=${encodeURIComponent(selectedType)}` +
+                `&genre=${encodeURIComponent(genre)}` +
+                `&year=${encodeURIComponent(year)}` +
+                `&provider=${encodeURIComponent(provider)}` +
+                `&rating=${encodeURIComponent(rating)}`;
+
             try {
-                const response = await fetch(`/random?genre=${encodeURIComponent(genre)}`);
+                const response = await fetch(url);
 
                 if (!response.ok) {
-                    throw new Error("Could not get a random movie.");
+                    throw new Error("Could not get a random pick.");
                 }
 
                 const movie = await response.json();
@@ -157,6 +177,7 @@
             }
         }
     </script>
+
 
 </body>
 </html>

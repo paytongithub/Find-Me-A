@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Find Me A – Home</title>
-     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="Theme.css">
     <link rel="stylesheet" href="HomePage.css">
 </head>
@@ -106,6 +106,17 @@
             function createMovieCard(movie) {
                 const card = document.createElement("div");
                 card.className = "movie-card";
+                const titleName = movie.title ?? movie.name ?? movie.titleName;
+                card.addEventListener("click", () => {
+                    if (!movie.id || !movie.mediaType) {
+                        console.log("Missing movie data:", movie);
+                        alert("This item is missing an ID.");
+                        return;
+                    }
+
+                    window.location.href =
+                        `DetailsPage.html?id=${movie.id}&type=${movie.mediaType}`;
+                });
 
                 const posterUrl = movie.poster
                     ? `${IMAGE_BASE_URL}${movie.poster}`

@@ -37,6 +37,25 @@
     color: gold;
 }
 
+.logout-btn {
+    margin-top: 20px;
+    padding: 12px 20px;
+    border-radius: 20px;
+    border: none;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    background-color: #d87e7e;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.logout-btn:hover {
+    background-color: #c96c6c;
+}
+
+
 .pf-stats {
     font-size: 14px;
     margin: 3px 0;

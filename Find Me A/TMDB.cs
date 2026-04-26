@@ -45,7 +45,7 @@ public class TMDB
                 var id = first.GetProperty("id").GetInt32();
                 // Get details and credits
                 // request external_ids so we can obtain the imdb_id
-                var detailsUrl = $"{baseUrl}/movie/{id}?api_key={apiKey}&language=en-US&append_to_response=external_ids";
+                var detailsUrl = $"{baseUrl}/movie/{id}?api_key={apiKey}&language=en-US&append_to_response=external_ids,videos";
                 var creditsUrl = $"{baseUrl}/movie/{id}/credits?api_key={apiKey}";
                 var detailsJson = await client.GetStringAsync(detailsUrl);
                 var creditsJson = await client.GetStringAsync(creditsUrl);
@@ -119,7 +119,7 @@ public class TMDB
             {
                 var first = results[0];
                 var id = first.GetProperty("id").GetInt32();
-                var detailsUrl = $"{baseUrl}/tv/{id}?api_key={apiKey}&language=en-US&append_to_response=external_ids";
+                var detailsUrl = $"{baseUrl}/tv/{id}?api_key={apiKey}&language=en-US&append_to_response=external_ids,videos";
                 var creditsUrl = $"{baseUrl}/tv/{id}/credits?api_key={apiKey}";
                 var detailsJson = await client.GetStringAsync(detailsUrl);
                 var creditsJson = await client.GetStringAsync(creditsUrl);
@@ -159,6 +159,24 @@ public class TMDB
                 {
                     if (ext.TryGetProperty("imdb_id", out var iid) && iid.ValueKind != JsonValueKind.Null)
                         title.ImdbId = iid.GetString();
+                }
+
+                string? trailerKey = null;
+
+                if (droot.TryGetProperty("videos", out var vids) &&
+                    vids.TryGetProperty("results", out var vidArr))
+                {
+                    foreach (var v in vidArr.EnumerateArray())
+                    {
+                        if (v.TryGetProperty("type", out var type) &&
+                            type.GetString() == "Trailer" &&
+                            v.TryGetProperty("site", out var site) &&
+                            site.GetString() == "YouTube")
+                        {
+                            trailerKey = v.GetProperty("key").GetString();
+                            break;
+                        }
+                    }
                 }
 
                 // actors (all returned by TMDB credits)
@@ -400,6 +418,210 @@ public class TMDB
         }
 
         return null;
+    }
+
+    public async Task<string> SearchAll(string query)
+    {
+        var encodedQuery = Uri.EscapeDataString(query);
+        var url = $"{baseUrl}/search/multi?api_key={apiKey}&query={encodedQuery}";
+        return await client.GetStringAsync(url);
+    }
+
+
+    public async Task<string> DiscoverRandom(
+        string? type,
+        string? genre,
+        string? year,
+        string? provider,
+        string? rating)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
+
+        string mediaType = type == "tv" ? "tv" : "movie";
+
+        var query = new List<string>
+        {
+            $"api_key={apiKey}",
+            "sort_by=popularity.desc",
+            "watch_region=US"
+        };
+
+        var genreMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Action", 28 },
+            { "Comedy", 35 },
+            { "Drama", 18 },
+            { "Horror", 27 },
+            { "Romance", 10749 },
+            { "Science Fiction", 878 },
+            { "Animation", 16 }
+        };
+
+        var tvGenreMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Action", 10759 },
+            { "Comedy", 35 },
+            { "Drama", 18 },
+            { "Horror", 9648 },
+            { "Romance", 10766 },
+            { "Science Fiction", 10765 },
+            { "Animation", 16 }
+        };
+
+        if (!string.IsNullOrWhiteSpace(genre) && genre != "All")
+        {
+            var map = mediaType == "tv" ? tvGenreMap : genreMap;
+
+            if (map.TryGetValue(genre, out int genreId))
+            {
+                query.Add($"with_genres={genreId}");
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(year) && year != "All")
+        {
+            if (mediaType == "movie")
+            {
+                if (year == "2020s")
+                    query.Add("primary_release_year=2020");
+                else if (year == "2010s")
+                    query.Add("primary_release_year=2015");
+                else if (year == "2000s")
+                    query.Add("primary_release_year=2005");
+                else if (year == "90s")
+                    query.Add("primary_release_year=1995");
+            }
+            else
+            {
+                if (year == "2020s")
+                    query.Add("first_air_date_year=2020");
+                else if (year == "2010s")
+                    query.Add("first_air_date_year=2015");
+                else if (year == "2000s")
+                    query.Add("first_air_date_year=2005");
+                else if (year == "90s")
+                    query.Add("first_air_date_year=1995");
+            }
+        }
+
+        var providerMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "Netflix", 8 },
+            { "Hulu", 15 },
+            { "Prime Video", 9 },
+            { "Disney+", 337 }
+        };
+
+        if (!string.IsNullOrWhiteSpace(provider) && provider != "All")
+        {
+            if (providerMap.TryGetValue(provider, out int providerId))
+            {
+                query.Add($"with_watch_providers={providerId}");
+            }
+        }
+
+        if (mediaType == "movie" &&
+            !string.IsNullOrWhiteSpace(rating) &&
+            rating != "All")
+        {
+            query.Add("certification_country=US");
+            query.Add($"certification={Uri.EscapeDataString(rating)}");
+        }
+
+        var url = $"{baseUrl}/discover/{mediaType}?{string.Join("&", query)}";
+        Console.WriteLine("TMDB Random Discover URL: " + url);
+        return await client.GetStringAsync(url);
+    }
+    public async Task<Title?> GetTitleById(int id, string type)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("TMDB_API_KEY is not set.");
+
+        string mediaType = type == "tv" ? "tv" : "movie";
+
+        var detailsUrl = $"{baseUrl}/{mediaType}/{id}?api_key={apiKey}&language=en-US&append_to_response=external_ids,videos";
+        var creditsUrl = $"{baseUrl}/{mediaType}/{id}/credits?api_key={apiKey}";
+
+        var detailsJson = await client.GetStringAsync(detailsUrl);
+        var creditsJson = await client.GetStringAsync(creditsUrl);
+
+        using var ddoc = JsonDocument.Parse(detailsJson);
+        using var cdoc = JsonDocument.Parse(creditsJson);
+
+        var droot = ddoc.RootElement;
+
+        var title = new Title();
+
+        title.TitleName = mediaType == "movie"
+            ? droot.GetProperty("title").GetString()
+            : droot.GetProperty("name").GetString();
+
+        title.TitleType = mediaType == "movie" ? "Movie" : "TV";
+
+        if (droot.TryGetProperty("release_date", out var rel) ||
+            droot.TryGetProperty("first_air_date", out rel))
+        {
+            DateTime.TryParse(rel.GetString(), out var rd);
+            title.ReleaseDate = rd;
+        }
+
+        title.AverageRating = droot.TryGetProperty("vote_average", out var va)
+            ? Convert.ToDecimal(va.GetDouble())
+            : 0;
+
+        // genres
+        title.Genres = new List<string>();
+        if (droot.TryGetProperty("genres", out var garr))
+        {
+            foreach (var g in garr.EnumerateArray())
+            {
+                if (g.TryGetProperty("name", out var gname))
+                    title.Genres.Add(gname.GetString() ?? "");
+            }
+        }
+
+        // poster
+        if (droot.TryGetProperty("poster_path", out var ppath) &&
+            ppath.ValueKind != JsonValueKind.Null)
+        {
+            title.PosterPath = ppath.GetString();
+        }
+
+        // overview
+        if (droot.TryGetProperty("overview", out var over))
+        {
+            title.Overview = over.GetString();
+        }
+
+        // trailer
+        if (droot.TryGetProperty("videos", out var vids) &&
+            vids.TryGetProperty("results", out var vidArr))
+        {
+            foreach (var v in vidArr.EnumerateArray())
+            {
+                if (v.GetProperty("type").GetString() == "Trailer" &&
+                    v.GetProperty("site").GetString() == "YouTube")
+                {
+                    var key = v.GetProperty("key").GetString();
+                    title.TrailerUrl = $"https://www.youtube.com/watch?v={key}";
+                    break;
+                }
+            }
+        }
+
+        // actors
+        title.Actors = new List<string>();
+        if (cdoc.RootElement.TryGetProperty("cast", out var castArr))
+        {
+            foreach (var actor in castArr.EnumerateArray().Take(8))
+            {
+                if (actor.TryGetProperty("name", out var name))
+                    title.Actors.Add(name.GetString() ?? "");
+            }
+        }
+
+        return title;
     }
 
 }

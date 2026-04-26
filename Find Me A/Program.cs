@@ -57,20 +57,41 @@ app.MapPost("/register", (HttpContext ctx) =>
 app.MapGet("/search", async (string query) =>
 {
     var tmdb = new TMDB();
-    var json = await tmdb.SearchMovies(query);
+    var json = await tmdb.SearchAll(query);
 
     var data = JsonDocument.Parse(json);
 
     var movies = data.RootElement
         .GetProperty("results")
         .EnumerateArray()
-        .Select(movie => new
+        .Where(item =>
+            item.GetProperty("media_type").GetString() == "movie" ||
+            item.GetProperty("media_type").GetString() == "tv")
+        .Select(item => new
         {
-            title = movie.GetProperty("title").GetString(),
-            overview = movie.GetProperty("overview").GetString(),
-            poster = movie.GetProperty("poster_path").GetString(),
-            rating = movie.GetProperty("vote_average").GetDouble()
+            id = item.GetProperty("id").GetInt32(),
+            mediaType = item.GetProperty("media_type").GetString(),
+            title = item.TryGetProperty("title", out var title)
+                ? title.GetString()
+                : item.TryGetProperty("name", out var name)
+                    ? name.GetString()
+                    : "Untitled",
+
+            overview = item.TryGetProperty("overview", out var overview)
+                ? overview.GetString()
+                : "",
+
+            poster = item.TryGetProperty("poster_path", out var poster) &&
+                    poster.ValueKind != JsonValueKind.Null
+                ? poster.GetString()
+                : "",
+
+            rating = item.TryGetProperty("vote_average", out var rating)
+                ? rating.GetDouble()
+                : 0,
+
         });
+
     return movies;
 });
 
@@ -106,7 +127,6 @@ app.MapGet("/details", async (string title) =>
         sb.Append($"<h1 class=\"dt-title\">{System.Net.WebUtility.HtmlEncode(t.TitleName)}</h1>\n");
         sb.Append($"<p class=\"dt-subinfo\">{(t.ReleaseDate == DateTime.MinValue ? string.Empty : t.ReleaseDate.Year.ToString())} • {(t.TitleType ?? "")}</p>\n");
         sb.Append($"<p class=\"dt-summary\">{System.Net.WebUtility.HtmlEncode(t.Overview ?? "No summary available.")}</p>\n");
-        // use single quotes around the onclick attribute so serialized title (which has double quotes) is valid
         sb.Append($"<button class=\"dt-watchlist-btn\" onclick='addToWatchlist({System.Text.Json.JsonSerializer.Serialize(t.TitleName)})'>+ Add to Watchlist</button>\n");
         if (!string.IsNullOrWhiteSpace(t.ImdbId))
         {
@@ -315,6 +335,8 @@ app.MapGet("/featured", async (string username) =>
             .Take(10)
             .Select(movie => new
             {
+                id = movie.GetProperty("id").GetInt32(),
+                mediaType = "movie",
                 title = movie.GetProperty("title").GetString(),
                 poster = movie.GetProperty("poster_path").GetString(),
                 rating = movie.GetProperty("vote_average").GetDouble()
@@ -400,7 +422,9 @@ app.MapGet("/top-picks", async (string username) =>
             .EnumerateArray()
             .Take(10)
             .Select(movie => new
-            {
+            {   
+                id = movie.GetProperty("id").GetInt32(),
+                mediaType = "movie",
                 title = movie.GetProperty("title").GetString(),
                 poster = movie.GetProperty("poster_path").GetString(),
                 rating = movie.GetProperty("vote_average").GetDouble()
@@ -429,7 +453,9 @@ app.MapGet("/trending", async () =>
         .EnumerateArray()
         .Take(10)
         .Select(movie => new
-        {
+        {   
+            id = movie.GetProperty("id").GetInt32(),
+            mediaType = "movie",
             title = movie.GetProperty("title").GetString(),
             poster = movie.GetProperty("poster_path").GetString(),
             rating = movie.GetProperty("vote_average").GetDouble()
@@ -437,58 +463,76 @@ app.MapGet("/trending", async () =>
 
     return Results.Ok(movies);
 });
-app.MapGet("/random", async (string? genre) =>
+
+app.MapGet("/random", async (
+    string? type,
+    string? genre,
+    string? year,
+    string? provider,
+    string? rating) =>
 {
     var tmdb = new TMDB();
-    var json = await tmdb.GetPopularMovies();
 
-    var data = JsonDocument.Parse(json);
-
-    var movies = data.RootElement
-        .GetProperty("results")
-        .EnumerateArray()
-        .Select(movie => new
-        {
-            title = movie.GetProperty("title").GetString(),
-            overview = movie.GetProperty("overview").GetString(),
-            poster = movie.GetProperty("poster_path").GetString(),
-            rating = movie.GetProperty("vote_average").GetDouble(),
-            genreIds = movie.GetProperty("genre_ids").EnumerateArray().Select(g => g.GetInt32()).ToList()
-        })
-        .ToList();
-
-    if (!string.IsNullOrWhiteSpace(genre) && genre != "All")
+    try
     {
-        var genreMap = new Dictionary<string, int>
-        {
-            { "Action", 28 },
-            { "Comedy", 35 },
-            { "Drama", 18 },
-            { "Horror", 27 }
-        };
+        string json = await tmdb.DiscoverRandom(type, genre, year, provider, rating);
 
-        if (genreMap.TryGetValue(genre, out int genreId))
+        var data = JsonDocument.Parse(json);
+
+        if (!data.RootElement.TryGetProperty("results", out var results) ||
+            results.GetArrayLength() == 0)
         {
-            movies = movies.Where(m => m.genreIds.Contains(genreId)).ToList();
+            return Results.NotFound(new { message = "No movies found." });
         }
+
+        var movies = results.EnumerateArray()
+            .Select(item => new
+            {
+                title = item.TryGetProperty("title", out var title)
+                    ? title.GetString()
+                    : item.TryGetProperty("name", out var name)
+                        ? name.GetString()
+                        : "Untitled",
+
+                overview = item.TryGetProperty("overview", out var overview)
+                    ? overview.GetString()
+                    : "",
+
+                poster = item.TryGetProperty("poster_path", out var poster) &&
+                         poster.ValueKind != JsonValueKind.Null
+                    ? poster.GetString()
+                    : "",
+
+                rating = item.TryGetProperty("vote_average", out var vote)
+                    ? vote.GetDouble()
+                    : 0,
+                
+                releaseDate = item.TryGetProperty("release_date", out var release)
+                    ? release.GetString()
+                    : item.TryGetProperty("first_air_date", out var airDate)
+                        ? airDate.GetString()
+                        : "",
+                    
+                genreIds = item.GetProperty("genre_ids")
+                .EnumerateArray()
+                .Select(g => g.GetInt32())
+                .ToList()
+            })
+            .ToList();
+
+        var rng = new Random();
+        var pick = movies[rng.Next(movies.Count)];
+
+        return Results.Ok(pick);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
     }
 
-    if (movies.Count == 0)
-    {
-        return Results.NotFound(new { message = "No movies found." });
-    }
-
-    var rng = new Random();
-    var pick = movies[rng.Next(movies.Count)];
-
-    return Results.Ok(new
-    {
-        title = pick.title,
-        overview = pick.overview,
-        poster = pick.poster,
-        rating = pick.rating
-    });
+    
 });
+
 
 app.MapGet("/users", () =>
 {
@@ -570,6 +614,38 @@ app.MapGet("/watchlist", async (string username) =>
         return Results.BadRequest(new { error = ex.Message });
     }
 });
+
+app.MapGet("/api/details", async (string title) =>
+{
+    var tmdb = new TMDB();
+
+    try
+    {
+        var result = await tmdb.GetTitleByName(title);
+
+        if (result == null)
+        {
+            return Results.NotFound(new { error = "Title not found" });
+        }
+
+        return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { error = ex.Message });
+    }
+});
+
+app.MapGet("/details-data", async (int id, string type) =>
+{
+    var tmdb = new TMDB();
+    var result = await tmdb.GetTitleById(id, type);
+    if (result == null)
+        return Results.NotFound(new { error = "Title not found" });
+
+    return Results.Ok(result);
+});
+
 
 
 app.Run();

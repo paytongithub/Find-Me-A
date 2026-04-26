@@ -41,8 +41,6 @@ header-right{
     color: gold;
     font-weight: 800;
 }
-
-/* Horizontal Carousels */
 .carousel {
     display: flex;
     gap: 38px;
@@ -100,6 +98,7 @@ header-right{
     width: 150px;
     flex: 0 0 auto;
     text-align: center;
+    cursor: pointer;
 }
 
 .poster-card {
