@@ -1,0 +1,31 @@
+﻿.dt-edit-btn,
+.dt-delete-btn {
+    padding: 12px 20px;
+    border-radius: 20px;
+    border: none;
+    background-color: #d87e7e;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.dt-edit-btn {
+    background: #d87e7e;
+    color: white;
+}
+
+    .dt-edit-btn:hover {
+        background-color: #c96c6c;
+        transform: translateY(-2px);
+    }
+
+.dt-delete-btn {
+    background: #625855;
+    color: #fff8ef;
+}
+
+    .dt-delete-btn:hover {
+        opacity: 0.60;
+        transform: translateY(-2px);
+    }

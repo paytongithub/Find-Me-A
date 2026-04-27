@@ -1,4 +1,8 @@
-﻿.dt-body {
+﻿.dt-action-buttons button {
+    box-sizing: border-box;
+}
+
+.dt-body {
     background-color: #3f3937;
     color: #fff8ef;
     font-family: 'Poppins', sans-serif;
@@ -49,23 +53,26 @@
     font-family: Georgia, serif;
     font-size: 52px;
     color: #fff8ef;
-    margin: 0 !important; 
+    margin: 0 !important;
     line-height: 1.05;
 }
 
 .dt-title-row {
     display: flex;
-    align-items: center; 
+    align-items: center;
     gap: 15px;
     margin-bottom: 20px;
 }
 
-
+.dt-action-buttons {
+    display: flex;
+    gap: 10px;
+}
 
 .dt-watchlist-icon-btn {
     background: none;
-    border: 2px solid #cdb86d; 
-    border-radius: 50%; 
+    border: 2px solid #cdb86d;
+    border-radius: 50%;
     width: 45px;
     height: 45px;
     display: flex;
@@ -77,19 +84,50 @@
     padding: 0;
 }
 
-.dt-watchlist-icon-btn svg {
-    width: 24px;
-    height: 24px;
+    .dt-watchlist-icon-btn svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .dt-watchlist-icon-btn:hover {
+        background: #cdb86d;
+        color: #3f3937;
+    }
+
+.dt-edit-btn,
+.dt-delete-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'Poppins', sans-serif;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    -webkit-appearance: none;
+    appearance: none;
 }
 
-.dt-watchlist-icon-btn:hover {
-    background: #cdb86d;
-    color: #3f3937; 
+.dt-edit-btn {
+    background: #4a9eff;
+    color: white;
 }
 
-.dt-watchlist-btn {
-    display: none;
+    .dt-edit-btn:hover {
+        background: #357abd;
+        transform: translateY(-2px);
+    }
+
+.dt-delete-btn {
+    background: #ff6b6b;
+    color: white;
 }
+
+    .dt-delete-btn:hover {
+        background: #d63031;
+        transform: translateY(-2px);
+    }
 
 
 .dt-subinfo {
@@ -126,7 +164,7 @@
     text-align: left;
 }
 
-.dt-cast{
+.dt-cast {
     min-width: 0;
 }
 
@@ -139,18 +177,18 @@
     width: 100%;
 }
 
-.dt-actors::-webkit-scrollbar {
-    height: 6px;
-}
+    .dt-actors::-webkit-scrollbar {
+        height: 6px;
+    }
 
-.dt-actors::-webkit-scrollbar-thumb {
-    background: #ffd94f;
-    border-radius: 10px;
-}
+    .dt-actors::-webkit-scrollbar-thumb {
+        background: #ffd94f;
+        border-radius: 10px;
+    }
 
-.dt-actors::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-}
+    .dt-actors::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+    }
 
 .actor-card {
     flex: 0 0 auto;
@@ -172,6 +210,3 @@
 .dt-trailer {
     min-width: 0;
 }
-
-
-

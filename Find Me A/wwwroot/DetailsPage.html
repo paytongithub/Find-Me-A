@@ -6,6 +6,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/Theme.css">
     <link rel="stylesheet" href="css/DetailsPage.css">
+    <link rel="stylesheet" href="css/DetailsPageButtons.css">
 </head>
 
 <body class="dt-body">
@@ -24,15 +25,23 @@
                 <div class="dt-title-row">
                     <h1 class="dt-title"></h1>
 
-                    <button class="dt-watchlist-icon-btn" id="watchlistBtn" title="Add to Watchlist">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
-                        </svg>
-                    </button>
+                    <div id="actionButtonsContainer" class="dt-action-buttons">
+                        <button class="dt-watchlist-icon-btn" id="addWatchlistBtn" title="Add to Watchlist">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                            </svg>
+                        </button>
+                        <button class="dt-edit-btn" id="editBtn" title="Edit Rating" style="display:none;">Edit</button>
+                        <button class="dt-delete-btn" id="deleteBtn" title="Delete from Watchlist" style="display:none;">Delete</button>
+                    </div>
                 </div>
 
                 <p class="dt-subinfo"></p>
                 <p class="dt-summary" id="overviewTest"></p>
+
+                <div id="ratingDisplay" class="dt-rating-display" style="display: none;">
+                    <p class="dt-user-rating"><strong>Your Rating:</strong> <span id="userRatingStars"></span></p>
+                </div>
             </div>
         </div>
 
@@ -53,21 +62,21 @@
     <nav class="bottom-nav">
         <a href="index.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
-            <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <path d="M5 10v10h14V10" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" fill="none" />
+                <path d="M5 10v10h14V10" stroke="currentColor" stroke-width="2" fill="none" />
             </svg>
             <span>Home</span>
         </a>
         <a href="SearchPage.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
-            <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2"/>
+                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none" />
+                <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" />
             </svg>
             <span>Search</span>
         </a>
         <a href="WatchlistPage.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
-                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke="currentColor" stroke-width="2" fill="none" />
             </svg>
             <span>Watchlist</span>
         </a>
@@ -82,8 +91,8 @@
         -->
         <a href="ProfilePage.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
-                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
-                <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" fill="none"/>
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none" />
+                <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" fill="none" />
             </svg>
             <span>Profile</span>
         </a>
@@ -91,6 +100,7 @@
 
     <script>
         const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+        const username = localStorage.getItem("username");
 
         async function loadDetails() {
             const params = new URLSearchParams(window.location.search);
@@ -145,48 +155,153 @@
                     : data.trailerUrl;
 
                 trailerContainer.innerHTML = `
-                    <iframe
-                        width="100%"
-                        height="260"
-                        src="https://www.youtube.com/embed/${trailerKey}"
-                        frameborder="0"
-                        allowfullscreen>
-                    </iframe>
-                `;
+                        <iframe
+                            width="100%"
+                            height="260"
+                            src="https://www.youtube.com/embed/${trailerKey}"
+                            frameborder="0"
+                            allowfullscreen>
+                        </iframe>
+                    `;
             } else {
                 trailerContainer.innerHTML = "<p>No trailer available.</p>";
             }
 
-            document.querySelector(".dt-watchlist-icon-btn").onclick = async () => {
-                const username = localStorage.getItem("username");
-                if (!username) {
-                    alert("You must be logged in to add to watchlist.");
-                    return;
-                }
+            // Check if user has already watched this title
+            const ratingDisplay = document.getElementById("ratingDisplay");
+            const addBtn = document.getElementById("addWatchlistBtn");
+            const editBtn = document.getElementById("editBtn");
+            const deleteBtn = document.getElementById("deleteBtn");
 
-                const ratingInput = prompt("Enter rating 1-10 (or leave blank):");
-                let rating = 0;
-                if (ratingInput !== null && ratingInput.trim() !== "") {
-                    const parsed = Number.parseInt(ratingInput.trim(), 10);
-                    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 10) {
-                        alert("Rating must be a whole number from 1 to 10.");
-                        return;
+            function showAddButton() {
+                addBtn.style.display = "";
+                editBtn.style.display = "none";
+                deleteBtn.style.display = "none";
+                addBtn.onclick = () => addToWatchlist(data.titleName, id, type);
+                ratingDisplay.style.display = "none";
+            }
+
+            if (!username) {
+                showAddButton();
+            } else {
+                // Logged in - check watchlist
+                try {
+                    const watchlistResponse = await fetch(`/watchlist?username=${encodeURIComponent(username)}`);
+                    const watchlist = await watchlistResponse.json();
+
+                    const watchedItem = watchlist.find(item =>
+                        item.titleName.toLowerCase() === data.titleName.toLowerCase()
+                    );
+
+                    if (watchedItem) {
+                        addBtn.style.display = "none";
+                        editBtn.style.display = "";
+                        deleteBtn.style.display = "";
+                        editBtn.onclick = () => editRating(data.titleName);
+                        deleteBtn.onclick = () => deleteFromWatchlist(data.titleName);
+
+                        // Display user's rating
+                        const stars = watchedItem.userRating
+                            ? "★".repeat(watchedItem.userRating) + "☆".repeat(10 - watchedItem.userRating)
+                            : "No rating";
+                        document.getElementById("userRatingStars").textContent = stars;
+                        ratingDisplay.style.display = "block";
+                    } else {
+                        showAddButton();
                     }
-                    rating = parsed;
+                } catch (error) {
+                    console.error("Error checking watchlist:", error);
+                    showAddButton();
                 }
+            }
+        }
 
-                const response = await fetch(`/watchlist/add?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(data.titleName)}&rating=${encodeURIComponent(rating)}&mediaType=${encodeURIComponent(type)}&tmdbId=${encodeURIComponent(id)}`, {
-                    method: "POST"
-                });
+        async function addToWatchlist(titleName, id, type) {
+            const username = localStorage.getItem("username");
+            if (!username) {
+                alert("You must be logged in to add to watchlist.");
+                return;
+            }
 
-                const payload = await response.json().catch(() => ({}));
-                if (!response.ok) {
-                    alert(payload.error || "Failed to add to watchlist.");
+            const ratingInput = prompt("Enter rating 1-10 (or leave blank):");
+            let rating = 0;
+            if (ratingInput !== null && ratingInput.trim() !== "") {
+                const parsed = Number.parseInt(ratingInput.trim(), 10);
+                if (!Number.isInteger(parsed) || parsed < 1 || parsed > 10) {
+                    alert("Rating must be a whole number from 1 to 10.");
                     return;
                 }
+                rating = parsed;
+            }
 
-                alert(payload.message || "Added to watchlist!");
-            };
+            const response = await fetch(`/watchlist/add?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(titleName)}&rating=${encodeURIComponent(rating)}&mediaType=${encodeURIComponent(type)}&tmdbId=${encodeURIComponent(id)}`, {
+                method: "POST"
+            });
+
+            const payload = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                alert(payload.error || "Failed to add to watchlist.");
+                return;
+            }
+
+            alert(payload.message || "Added to watchlist!");
+            // Reload the page to show edit/delete buttons
+            location.reload();
+        }
+
+        async function editRating(titleName) {
+            const username = localStorage.getItem("username");
+            if (!username) return;
+
+            const newRating = prompt("Enter new rating (1–10):");
+            if (!newRating) return;
+
+            const parsedRating = parseInt(newRating);
+            if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 10) {
+                alert("Please enter a number between 1 and 10.");
+                return;
+            }
+
+            try {
+                const response = await fetch(
+                    `/watchlist/update?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(titleName)}&newRating=${parsedRating}`,
+                    { method: "PUT" }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to update rating");
+                }
+
+                alert("Rating updated successfully!");
+                location.reload();
+            } catch (error) {
+                console.error(error);
+                alert("Could not update rating.");
+            }
+        }
+
+        async function deleteFromWatchlist(titleName) {
+            const username = localStorage.getItem("username");
+            if (!username) return;
+
+            if (!confirm(`Delete "${titleName}" from watchlist?`)) return;
+
+            try {
+                const response = await fetch(
+                    `/watchlist/remove?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(titleName)}`,
+                    { method: "DELETE" }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to delete movie");
+                }
+
+                alert("Removed from watchlist!");
+                location.reload();
+            } catch (error) {
+                console.error(error);
+                alert("Could not delete from watchlist.");
+            }
         }
 
         loadDetails();
@@ -194,5 +309,3 @@
 
 </body>
 </html>
-
-
