@@ -180,16 +180,20 @@ namespace Find_Me_A
            {
                conn.Open();
                int UserID = GetUserId(conn, Username);
-               int TitleID = GetTitleId(conn, TitleName);
 
 
                using (SqlCommand cmd = new SqlCommand(@"
-                   DELETE FROM UserWatchedTitles
-                   WHERE UserID = @UserID AND TitleID = @TitleID", conn))
+                   DELETE uwt
+                   FROM UserWatchedTitles uwt
+                   INNER JOIN Titles t ON uwt.TitleID = t.TitleID
+                   WHERE uwt.UserID = @UserID
+                     AND LTRIM(RTRIM(t.TitleName)) = LTRIM(RTRIM(@TitleName));", conn))
                {
                    cmd.Parameters.AddWithValue("@UserID", UserID);
-                   cmd.Parameters.AddWithValue("@TitleID", TitleID);
-                   cmd.ExecuteNonQuery();
+                   cmd.Parameters.AddWithValue("@TitleName", TitleName);
+                   int removedRows = cmd.ExecuteNonQuery();
+                   if (removedRows == 0)
+                       throw new Exception($"No watchlist item found for '{TitleName}'.");
                }
            }
        }
