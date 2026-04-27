@@ -25,20 +25,20 @@
         </section>
 
         <section class="hp-section">
-            <h2 class="hp-section-title">Featured For You</h2>
+            <h2 class="hp-section-title">Picks From Your Favorite Genres</h2>
             <div class="carousel-wrap">
-                <button class="carousel-arrow left" onclick="scrollCarousel('featuredContainer', -300)">&#x2B9C;</button>
+                <button class="carousel-arrow left" onclick="carouselLeft('featured')">&#x2B9C;</button>
                 <div id="featuredContainer" class="carousel"></div>
-                <button class="carousel-arrow right" onclick="scrollCarousel('featuredContainer', 300)">&#11166;</button>
+                <button class="carousel-arrow right" onclick="carouselRight('featured')">&#11166;</button>
             </div>
         </section>
 
         <section class="hp-section">
-            <h2 class="hp-section-title">Top Picks For You</h2>
+            <h2 class="hp-section-title">Picks From Your Favorite Actors</h2>
             <div class="carousel-wrap">
-                <button class="carousel-arrow left" onclick="scrollCarousel('topPicksContainer', -300)">&#x2B9C;</button>
+                <button class="carousel-arrow left" onclick="carouselLeft('topPicks')">&#x2B9C;</button>
                 <div id="topPicksContainer" class="carousel"></div>
-                <button class="carousel-arrow right" onclick="scrollCarousel('topPicksContainer', 300)">&#11166;</button>
+                <button class="carousel-arrow right" onclick="carouselRight('topPicks')">&#11166;</button>
             </div>
         </section>
 
@@ -47,7 +47,7 @@
             <div class="carousel-wrap">
                 <button class="carousel-arrow left" onclick="scrollCarousel('trendingContainer', -300)">&#x2B9C;</button>
                 <div id="trendingContainer" class="carousel"></div>
-                <button class="carousel-arrow right" onclick="scrollCarousel('trendingContainer', 300)">&#11166;</button>
+                <button class="carousel-arrow right" onclick="scrollCarousel('trendingContainer',  300)">&#11166;</button>
             </div>
         </section>
 
@@ -84,19 +84,40 @@
     </nav>
 
     <script>
-        const username = localStorage.getItem("username");
-        if (username) document.getElementById("headerWelcome").textContent = `Welcome, ${username}`;
-
-        const featuredContainer = document.getElementById("featuredContainer");
-        const topPicksContainer = document.getElementById("topPicksContainer");
-        const trendingContainer = document.getElementById("trendingContainer");
-
+        // ─── Constants ────────────────────────────────────────────────────────
         const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+        const username = localStorage.getItem("username");
 
-        function scrollCarousel(id, amount) {
-            document.getElementById(id).scrollBy({ left: amount, behavior: "smooth" });
+        if (username) {
+            document.getElementById("headerWelcome").textContent = `Welcome, ${username}`;
         }
 
+        // ─── Carousel state ───────────────────────────────────────────────────
+        // Each recommendation carousel tracks:
+        //   page       – next page index to request from the server
+        //   seenIds    – Set of TMDB IDs already shown (used in ?exclude= param)
+        //   loading    – prevents duplicate in-flight requests
+        //   exhausted  – no more server pages available
+        const carouselState = {
+            featured: {
+                containerId: "featuredContainer",
+                endpoint: "/featured",
+                page: 0,
+                seenIds: new Set(),
+                loading: false,
+                exhausted: false,
+            },
+            topPicks: {
+                containerId: "topPicksContainer",
+                endpoint: "/top-picks",
+                page: 0,
+                seenIds: new Set(),
+                loading: false,
+                exhausted: false,
+            },
+        };
+
+        // ─── Movie card factory ───────────────────────────────────────────────
         function createMovieCard(movie) {
             const card = document.createElement("div");
             card.className = "movie-card";
@@ -118,39 +139,137 @@
                     : `<div class="poster placeholder">No Image</div>`
                 }
                         <h3>${movie.title ?? "Untitled"}</h3>
-                        <p>&#11088; ${movie.rating ?? "N/A"}</p>
+                        <p>&#11088; ${movie.rating != null ? Number(movie.rating).toFixed(1) : "N/A"}</p>
                     </div>
                 `;
 
             return card;
         }
 
-        async function loadSection(url, container) {
+        // ─── Fetch one page from a recommendation endpoint ────────────────────
+        // Returns the array of new movies (may be empty if exhausted).
+        async function fetchRecommendationPage(key) {
+            const state = carouselState[key];
+            if (state.loading || state.exhausted || !username) return [];
+
+            state.loading = true;
+
             try {
+                const excludeParam = [...state.seenIds].join(",");
+                const url = `${state.endpoint}?username=${encodeURIComponent(username)}`
+                    + `&page=${state.page}`
+                    + (excludeParam ? `&exclude=${encodeURIComponent(excludeParam)}` : "");
+
                 const response = await fetch(url);
-                if (!response.ok) throw new Error(`Failed to load ${url}`);
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
+
                 const movies = await response.json();
-                container.innerHTML = "";
+
                 if (!movies || movies.length === 0) {
-                    container.innerHTML = "<p>No movies found.</p>";
-                    return;
+                    // Try a couple more pages before giving up, in case a TMDB page
+                    // was entirely filtered out by the watched/exclude lists.
+                    state.page++;
+                    if (state.page > 20) {          // hard cap to avoid infinite loops
+                        state.exhausted = true;
+                    }
+                    return [];
                 }
-                movies.forEach(movie => container.appendChild(createMovieCard(movie)));
-            } catch (error) {
-                container.innerHTML = "<p>Error loading section.</p>";
-                console.error(error);
+
+                // Register new IDs so subsequent pages exclude them
+                movies.forEach(m => state.seenIds.add(m.id));
+                state.page++;
+                return movies;
+
+            } catch (err) {
+                console.error(`[${key}] fetch failed:`, err);
+                return [];
+            } finally {
+                state.loading = false;
             }
         }
 
-        if (username) {
-            loadSection(`/featured?username=${encodeURIComponent(username)}`, featuredContainer);
-            loadSection(`/top-picks?username=${encodeURIComponent(username)}`, topPicksContainer);
-        } else {
-            featuredContainer.innerHTML = "<p>Log in to see personalized picks.</p>";
-            topPicksContainer.innerHTML = "<p>Log in to see personalized picks.</p>";
+        // ─── Append movies to a carousel container ────────────────────────────
+        function appendMovies(containerId, movies) {
+            const container = document.getElementById(containerId);
+            if (!movies || movies.length === 0) return;
+            movies.forEach(movie => container.appendChild(createMovieCard(movie)));
         }
 
-        loadSection("/trending", trendingContainer);
+        // ─── Initial load for recommendation carousels ────────────────────────
+        async function initRecommendationCarousel(key) {
+            const state = carouselState[key];
+            const container = document.getElementById(state.containerId);
+
+            if (!username) {
+                container.innerHTML = "<p>Log in to see personalized picks.</p>";
+                return;
+            }
+
+            container.innerHTML = "<p class='carousel-loading'>Loading…</p>";
+
+            const movies = await fetchRecommendationPage(key);
+
+            container.innerHTML = "";
+
+            if (movies.length === 0) {
+                container.innerHTML = "<p>No recommendations yet – start rating titles!</p>";
+            } else {
+                appendMovies(state.containerId, movies);
+            }
+        }
+
+        // ─── Arrow handlers ───────────────────────────────────────────────────
+        // Left arrow: scroll left only — all cards are already in the DOM.
+        function carouselLeft(key) {
+            const containerId = carouselState[key].containerId;
+            document.getElementById(containerId).scrollBy({ left: -300, behavior: "smooth" });
+        }
+
+        // Right arrow: scroll right AND always fetch + append the next batch so
+        // the carousel grows unboundedly with each press.
+        // We kick off the fetch immediately (before the scroll animation finishes)
+        // so new cards are ready by the time the user wants to keep scrolling.
+        async function carouselRight(key) {
+            const state = carouselState[key];
+            const container = document.getElementById(state.containerId);
+
+            // Scroll immediately for instant feedback
+            container.scrollBy({ left: 300, behavior: "smooth" });
+
+            // Always load the next page (guard prevents duplicate in-flight requests)
+            if (!state.loading && !state.exhausted) {
+                const movies = await fetchRecommendationPage(key);
+                appendMovies(state.containerId, movies);
+            }
+        }
+
+        // ─── Trending carousel (simple, no pagination, scroll-only) ──────────
+        function scrollCarousel(id, amount) {
+            document.getElementById(id).scrollBy({ left: amount, behavior: "smooth" });
+        }
+
+        async function loadTrending() {
+            const container = document.getElementById("trendingContainer");
+            try {
+                const response = await fetch("/trending");
+                if (!response.ok) throw new Error("Failed to load trending");
+                const movies = await response.json();
+                container.innerHTML = "";
+                if (!movies || movies.length === 0) {
+                    container.innerHTML = "<p>No trending titles found.</p>";
+                    return;
+                }
+                movies.forEach(movie => container.appendChild(createMovieCard(movie)));
+            } catch (err) {
+                container.innerHTML = "<p>Error loading trending titles.</p>";
+                console.error(err);
+            }
+        }
+
+        // ─── Bootstrap ────────────────────────────────────────────────────────
+        initRecommendationCarousel("featured");
+        initRecommendationCarousel("topPicks");
+        loadTrending();
     </script>
 
 </body>

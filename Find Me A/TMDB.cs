@@ -263,7 +263,7 @@ public class TMDB
     }
 
     // Discover movies by actor names (comma-separated cast ids)
-    public async Task<string> DiscoverByActor(string[] actorNames)
+    public async Task<string> DiscoverByActor(string[] actorNames, int page = 1)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
@@ -295,13 +295,13 @@ public class TMDB
         if (ids.Count == 0)
             return "{}";
 
-        var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_cast={string.Join(',', ids)}";
+        var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_cast={string.Join(',', ids)}&page={page}";
         var discoverJson = await client.GetStringAsync(discoverUrl);
         return discoverJson;
     }
 
     // Discover movies genre names (maps names to ids then calls discover)
-    public async Task<string> DiscoverByGenre(string[] genreNames)
+    public async Task<string> DiscoverByGenre(string[] genreNames, int page = 1)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
             throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
@@ -333,7 +333,7 @@ public class TMDB
         if (ids.Count == 0)
             return "{}";
 
-        var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={string.Join(',', ids)}";
+        var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={string.Join(',', ids)}&page={page}";
         var discoverJson = await client.GetStringAsync(discoverUrl);
         return discoverJson;
     }
@@ -622,6 +622,90 @@ public class TMDB
         }
 
         return title;
+    }
+
+    public async Task<string> GetPopularMoviesPaged(int page = 1)
+    {
+        var url = $"{baseUrl}/movie/popular?api_key={apiKey}&page={page}";
+        return await client.GetStringAsync(url);
+    }
+
+    public async Task<string> GetTopRatedMoviesPaged(int page = 1)
+    {
+        var url = $"{baseUrl}/movie/top_rated?api_key={apiKey}&page={page}";
+        return await client.GetStringAsync(url);
+    }
+
+    public async Task<string> DiscoverByGenrePaged(string[] genreNames, int page = 1)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
+
+        if (genreNames == null || genreNames.Length == 0)
+            return "{}";
+
+        var genresUrl = $"{baseUrl}/genre/movie/list?api_key={apiKey}&language=en-US";
+        var genresJson = await client.GetStringAsync(genresUrl);
+        using var doc = JsonDocument.Parse(genresJson);
+        var root = doc.RootElement;
+        if (!root.TryGetProperty("genres", out var genres))
+            return "{}";
+
+        var ids = new List<int>();
+        foreach (var target in genreNames)
+        {
+            foreach (var g in genres.EnumerateArray())
+            {
+                if (g.TryGetProperty("name", out var nameProp) &&
+                    string.Equals(nameProp.GetString(), target, StringComparison.OrdinalIgnoreCase))
+                {
+                    ids.Add(g.GetProperty("id").GetInt32());
+                    break;
+                }
+            }
+        }
+
+        if (ids.Count == 0)
+            return "{}";
+
+        var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={string.Join(',', ids)}&sort_by=popularity.desc&page={page}";
+        return await client.GetStringAsync(discoverUrl);
+    }
+
+    public async Task<string> DiscoverByActorPaged(string[] actorNames, int page = 1)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
+
+        if (actorNames == null || actorNames.Length == 0)
+            return "{}";
+
+        var ids = new List<int>();
+        foreach (var name in actorNames)
+        {
+            var encoded = Uri.EscapeDataString(name);
+            var searchUrl = $"{baseUrl}/search/person?api_key={apiKey}&query={encoded}";
+            var searchJson = await client.GetStringAsync(searchUrl);
+            using var doc = JsonDocument.Parse(searchJson);
+            var root = doc.RootElement;
+            if (!root.TryGetProperty("results", out var results))
+                continue;
+
+            foreach (var person in results.EnumerateArray())
+            {
+                if (person.TryGetProperty("id", out var idProp))
+                {
+                    ids.Add(idProp.GetInt32());
+                    break;
+                }
+            }
+        }
+
+        if (ids.Count == 0)
+            return "{}";
+
+        var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_cast={string.Join(',', ids)}&sort_by=popularity.desc&page={page}";
+        return await client.GetStringAsync(discoverUrl);
     }
 
 }

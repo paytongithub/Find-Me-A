@@ -56,32 +56,29 @@ app.MapPost("/register", (HttpContext ctx) =>
 
 app.MapGet("/search", async (string query) =>
 {
-        var tmdb = new TMDB();
+    var tmdb = new TMDB();
 
-    //known genres you want to support
+    // Known genres — routed directly to TMDB discover instead of text search
     string[] knownGenres =
-{
-    "Action", "Comedy", "Horror", "Romance",
-    "Animation", "Science Fiction", 
-    "Rom-Com", "Fantasy", "Adventure", "Drama",
-    "Thriller", "Mystery","Western", "Crime",
-    "Documentary", "Musical"
-};
+    {
+        "Action", "Comedy", "Horror", "Romance",
+        "Animation", "Science Fiction",
+        "Rom-Com", "Fantasy", "Adventure", "Drama",
+        "Thriller", "Mystery", "Western", "Crime",
+        "Documentary", "Musical"
+    };
 
-    //Genre search branch
     if (knownGenres.Contains(query, StringComparer.OrdinalIgnoreCase))
     {
         var genreJson = await tmdb.DiscoverByGenre(new[] { query });
-        var genreResults = ParseDiscoverResults(genreJson);
-        return Results.Ok(genreResults);
+        return Results.Ok(ParseDiscoverResults(genreJson));
     }
 
-    //Fallback: TMDB multi-search
-    //Search for anything (no specific genre)
-    var Searchjson = await tmdb.SearchAll(query);
-    var data = JsonDocument.Parse(Searchjson);
+    // Fallback: TMDB multi-search (movies + TV)
+    var json = await tmdb.SearchAll(query);
+    var data = JsonDocument.Parse(json);
 
-    var moviesResults = data.RootElement
+    var movies = data.RootElement
         .GetProperty("results")
         .EnumerateArray()
         .Where(item =>
@@ -109,37 +106,33 @@ app.MapGet("/search", async (string query) =>
             rating = item.TryGetProperty("vote_average", out var rating)
                 ? rating.GetDouble()
                 : 0,
-
         });
 
-    return Results.Ok(moviesResults);
+    return Results.Ok(movies);
 });
 
-//helper method
+// Helper: parse TMDB /discover results into a consistent shape
 static IEnumerable<object> ParseDiscoverResults(string json)
 {
     var data = JsonDocument.Parse(json);
-
     return data.RootElement
         .GetProperty("results")
         .EnumerateArray()
-        .Select(item => new
+        .Select(item => (object)new
         {
             id = item.GetProperty("id").GetInt32(),
             mediaType = "movie",
             title = item.GetProperty("title").GetString(),
             overview = item.TryGetProperty("overview", out var overview)
-            ? overview.GetString()
-            : "",
+                            ? overview.GetString() : "",
             poster = item.TryGetProperty("poster_path", out var poster)
-            && poster.ValueKind != JsonValueKind.Null
-            ? poster.GetString()
-            : "",
+                        && poster.ValueKind != JsonValueKind.Null
+                            ? poster.GetString() : "",
             rating = item.TryGetProperty("vote_average", out var rating)
-            ? rating.GetDouble()
-            : 0,
+                            ? rating.GetDouble() : 0,
         });
-};
+}
+
 // Run automated tests (returns plain text). Respects RUN_TESTS_ALLOW_DB_WRITE env var inside tests.
 app.MapGet("/run-tests", async () =>
 {
@@ -308,87 +301,95 @@ app.MapPut("/watchlist/update", (string username, string movieTitle, int newRati
 });
 
 
-app.MapGet("/featured", async (string username) =>
+// ─── /featured ──────────────────────────────────────────────────────────────
+// Query params:
+//   username  – required
+//   page      – 0-based page index (default 0). Each page tries the next
+//               ranked genre; once all genres are exhausted it cycles TMDB
+//               result pages for the top genre.
+//   exclude   – comma-separated TMDB movie IDs already shown to the client
+//               so we never return a duplicate.
+app.MapGet("/featured", async (HttpContext ctx) =>
 {
     if (string.IsNullOrEmpty(connectionString))
-    {
         return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
-    }
 
+    string username = ctx.Request.Query["username"].ToString();
+    int page = int.TryParse(ctx.Request.Query["page"], out var p) ? Math.Max(0, p) : 0;
+    string excludeRaw = ctx.Request.Query["exclude"].ToString();
+
+    var excludedIds = string.IsNullOrWhiteSpace(excludeRaw)
+        ? new HashSet<int>()
+        : excludeRaw.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => int.TryParse(s.Trim(), out var id) ? id : -1)
+                    .Where(id => id >= 0)
+                    .ToHashSet();
 
     try
     {
         var tmdb = new TMDB();
-
-
         var watched = Recommendation.GetUserWatchedDetails(connectionString, username);
+
+        // Build genre profile and rank genres by (GenreScore DESC, TitleRelevance DESC)
         var genreProfile = Recommendation.GetGenreRecommendationProfileFromWatched(watched);
+        var rankedGenres = genreProfile.GenreData
+            .OrderByDescending(g => g.Item3)   // GenreScore
+            .ThenByDescending(g => g.Item2)    // TitleRelevance
+            .ToList();
 
+        // Determine which genre to query for this page and which TMDB page to use.
+        // Strategy: cycle through ranked genres first (one TMDB page each),
+        // then loop back through them on subsequent TMDB pages.
+        var watchedTitleNames = watched.Select(w => w.TitleName.ToLower()).ToHashSet();
+        const int pageSize = 10;
 
-        var topGenre = genreProfile.GenreData
-            .OrderByDescending(g => g.Item3)
-            .ThenByDescending(g => g.Item2)
-            .FirstOrDefault();
+        // We query TMDB and collect enough non-excluded, non-watched results.
+        // Try up to 3 TMDB pages per genre before moving to the next genre.
+        var results = new List<object>();
 
-
-        string json;
-
-
-        if (topGenre == null)
+        if (rankedGenres.Count == 0)
         {
-            json = await tmdb.GetPopularMovies();
+            // No profile yet → fall back to popular movies, paged
+            int tmdbPage = page + 1;
+            var popularJson = await tmdb.GetPopularMoviesPaged(tmdbPage);
+            results = ExtractMovies(popularJson, watchedTitleNames, excludedIds, pageSize);
         }
         else
         {
+            // Determine genre index and TMDB page from overall page counter.
+            int genreCount = rankedGenres.Count;
+            int genreIndex = page % genreCount;           // cycle through genres
+            int tmdbPage = (page / genreCount) + 1;    // go deeper into TMDB pages
+
+            var targetGenre = rankedGenres[genreIndex];
             string genreName = "";
 
-
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-
-
                 using var cmd = new SqlCommand(
                     "SELECT GenreName FROM Genres WHERE GenreID = @GenreID", conn);
-
-
-                cmd.Parameters.AddWithValue("@GenreID", topGenre.Item1);
-
-
-                var result = cmd.ExecuteScalar();
-                genreName = result?.ToString() ?? "";
+                cmd.Parameters.AddWithValue("@GenreID", targetGenre.Item1);
+                var res = cmd.ExecuteScalar();
+                genreName = res?.ToString() ?? "";
             }
 
-
-            if (string.IsNullOrWhiteSpace(genreName))
+            if (!string.IsNullOrWhiteSpace(genreName))
             {
-                json = await tmdb.GetPopularMovies();
+                var json = await tmdb.DiscoverByGenrePaged(new[] { genreName }, tmdbPage);
+                results = ExtractMovies(json, watchedTitleNames, excludedIds, pageSize);
             }
-            else
+
+            // If we got nothing (genre name missing or TMDB returned nothing),
+            // fall back to popular movies for this page.
+            if (results.Count == 0)
             {
-                json = await tmdb.DiscoverByGenre(new[] { genreName });
+                var fallbackJson = await tmdb.GetPopularMoviesPaged(tmdbPage);
+                results = ExtractMovies(fallbackJson, watchedTitleNames, excludedIds, pageSize);
             }
         }
 
-
-        var data = JsonDocument.Parse(json);
-
-
-        var movies = data.RootElement
-            .GetProperty("results")
-            .EnumerateArray()
-            .Take(10)
-            .Select(movie => new
-            {
-                id = movie.GetProperty("id").GetInt32(),
-                mediaType = "movie",
-                title = movie.GetProperty("title").GetString(),
-                poster = movie.GetProperty("poster_path").GetString(),
-                rating = movie.GetProperty("vote_average").GetDouble()
-            });
-
-
-        return Results.Ok(movies);
+        return Results.Ok(results);
     }
     catch (Exception ex)
     {
@@ -398,85 +399,79 @@ app.MapGet("/featured", async (string username) =>
 });
 
 
-app.MapGet("/top-picks", async (string username) =>
+// ─── /top-picks ─────────────────────────────────────────────────────────────
+// Same pagination contract as /featured but cycles through ranked actors.
+app.MapGet("/top-picks", async (HttpContext ctx) =>
 {
     if (string.IsNullOrEmpty(connectionString))
-    {
         return Results.BadRequest(new { error = "DB_CONNECTION is missing" });
-    }
 
+    string username = ctx.Request.Query["username"].ToString();
+    int page = int.TryParse(ctx.Request.Query["page"], out var p) ? Math.Max(0, p) : 0;
+    string excludeRaw = ctx.Request.Query["exclude"].ToString();
+
+    var excludedIds = string.IsNullOrWhiteSpace(excludeRaw)
+        ? new HashSet<int>()
+        : excludeRaw.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s => int.TryParse(s.Trim(), out var id) ? id : -1)
+                    .Where(id => id >= 0)
+                    .ToHashSet();
 
     try
     {
-        var watched = Recommendation.GetUserWatchedDetails(connectionString, username);
-        var actorProfile = Recommendation.GetActorRecommendationProfileFromWatched(watched);
-
-
-        var topActor = actorProfile.ActorData
-            .OrderByDescending(a => a.Item3)
-            .ThenByDescending(a => a.Item2)
-            .FirstOrDefault();
-
-
         var tmdb = new TMDB();
-        string json;
+        var watched = Recommendation.GetUserWatchedDetails(connectionString, username);
 
+        var actorProfile = Recommendation.GetActorRecommendationProfileFromWatched(watched);
+        var rankedActors = actorProfile.ActorData
+            .OrderByDescending(a => a.Item3)   // ActorScore
+            .ThenByDescending(a => a.Item2)    // TitleRelevance
+            .ToList();
 
-        if (topActor == null)
+        var watchedTitleNames = watched.Select(w => w.TitleName.ToLower()).ToHashSet();
+        const int pageSize = 10;
+
+        var results = new List<object>();
+
+        if (rankedActors.Count == 0)
         {
-            json = await tmdb.GetTopRatedMovies();
+            int tmdbPage = page + 1;
+            var topRatedJson = await tmdb.GetTopRatedMoviesPaged(tmdbPage);
+            results = ExtractMovies(topRatedJson, watchedTitleNames, excludedIds, pageSize);
         }
         else
         {
-            string actorName = "";
+            int actorCount = rankedActors.Count;
+            int actorIndex = page % actorCount;
+            int tmdbPage = (page / actorCount) + 1;
 
+            var targetActor = rankedActors[actorIndex];
+            string actorName = "";
 
             using (var conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-
-
                 using var cmd = new SqlCommand(
                     "SELECT ActorName FROM Actors WHERE ActorID = @ActorID", conn);
-
-
-                cmd.Parameters.AddWithValue("@ActorID", topActor.Item1);
-
-
-                var result = cmd.ExecuteScalar();
-                actorName = result?.ToString() ?? "";
+                cmd.Parameters.AddWithValue("@ActorID", targetActor.Item1);
+                var res = cmd.ExecuteScalar();
+                actorName = res?.ToString() ?? "";
             }
 
-
-            if (string.IsNullOrWhiteSpace(actorName))
+            if (!string.IsNullOrWhiteSpace(actorName))
             {
-                json = await tmdb.GetTopRatedMovies();
+                var json = await tmdb.DiscoverByActorPaged(new[] { actorName }, tmdbPage);
+                results = ExtractMovies(json, watchedTitleNames, excludedIds, pageSize);
             }
-            else
+
+            if (results.Count == 0)
             {
-                json = await tmdb.DiscoverByActor(new[] { actorName });
+                var fallbackJson = await tmdb.GetTopRatedMoviesPaged(tmdbPage);
+                results = ExtractMovies(fallbackJson, watchedTitleNames, excludedIds, pageSize);
             }
         }
 
-
-        var data = JsonDocument.Parse(json);
-
-
-        var movies = data.RootElement
-            .GetProperty("results")
-            .EnumerateArray()
-            .Take(10)
-            .Select(movie => new
-            {   
-                id = movie.GetProperty("id").GetInt32(),
-                mediaType = "movie",
-                title = movie.GetProperty("title").GetString(),
-                poster = movie.GetProperty("poster_path").GetString(),
-                rating = movie.GetProperty("vote_average").GetDouble()
-            });
-
-
-        return Results.Ok(movies);
+        return Results.Ok(results);
     }
     catch (Exception ex)
     {
@@ -484,6 +479,52 @@ app.MapGet("/top-picks", async (string username) =>
         return Results.BadRequest(new { error = ex.Message });
     }
 });
+
+
+// ─── Shared helper ───────────────────────────────────────────────────────────
+static List<object> ExtractMovies(
+    string json,
+    HashSet<string> watchedTitleNames,
+    HashSet<int> excludedIds,
+    int take)
+{
+    try
+    {
+        var data = JsonDocument.Parse(json);
+        if (!data.RootElement.TryGetProperty("results", out var arr))
+            return new List<object>();
+
+        return arr.EnumerateArray()
+            .Where(movie =>
+            {
+                // Skip items without a title or with an empty poster
+                if (!movie.TryGetProperty("title", out var titleProp)) return false;
+                var t = titleProp.GetString() ?? "";
+                if (watchedTitleNames.Contains(t.ToLower())) return false;
+
+                if (!movie.TryGetProperty("id", out var idProp)) return false;
+                if (excludedIds.Contains(idProp.GetInt32())) return false;
+
+                return true;
+            })
+            .Take(take)
+            .Select(movie => (object)new
+            {
+                id = movie.GetProperty("id").GetInt32(),
+                mediaType = "movie",
+                title = movie.GetProperty("title").GetString(),
+                poster = movie.TryGetProperty("poster_path", out var pp) && pp.ValueKind != JsonValueKind.Null
+                                ? pp.GetString() : "",
+                rating = movie.TryGetProperty("vote_average", out var va)
+                                ? va.GetDouble() : 0
+            })
+            .ToList();
+    }
+    catch
+    {
+        return new List<object>();
+    }
+}
 
 
 app.MapGet("/trending", async () =>
@@ -498,7 +539,7 @@ app.MapGet("/trending", async () =>
         .EnumerateArray()
         .Take(10)
         .Select(movie => new
-        {   
+        {
             id = movie.GetProperty("id").GetInt32(),
             mediaType = "movie",
             title = movie.GetProperty("title").GetString(),
@@ -551,13 +592,13 @@ app.MapGet("/random", async (
                 rating = item.TryGetProperty("vote_average", out var vote)
                     ? vote.GetDouble()
                     : 0,
-                
+
                 releaseDate = item.TryGetProperty("release_date", out var release)
                     ? release.GetString()
                     : item.TryGetProperty("first_air_date", out var airDate)
                         ? airDate.GetString()
                         : "",
-                    
+
                 genreIds = item.GetProperty("genre_ids")
                 .EnumerateArray()
                 .Select(g => g.GetInt32())
@@ -575,7 +616,7 @@ app.MapGet("/random", async (
         return Results.BadRequest(new { error = ex.Message });
     }
 
-    
+
 });
 
 
@@ -697,8 +738,8 @@ app.Run();
 
 internal static class TestRunner
 {
-   public static System.Threading.Tasks.Task<string> RunAllTestsAsync(string connectionString)
-   {
-       return System.Threading.Tasks.Task.FromResult("Test runner is unavailable in this build.");
-   }
+    public static System.Threading.Tasks.Task<string> RunAllTestsAsync(string connectionString)
+    {
+        return System.Threading.Tasks.Task.FromResult("Test runner is unavailable in this build.");
+    }
 }
