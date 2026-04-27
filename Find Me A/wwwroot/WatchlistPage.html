@@ -18,7 +18,7 @@
     </header>
 
     <div class="wl-add-wrapper">
-        <button class="wl-add-btn" onclick="addFilm()">+ Add Film</button>
+        <button class="wl-add-btn" onclick="window.location.href='./SearchPage.html'">+ Add Film</button>
     </div>
 
     <main class="wl-main" id="seen-list">
@@ -46,15 +46,6 @@
             </svg>
             <span>Watchlist</span>
         </a>
-        <!--
-        <a href="ReviewPage.html">
-            <svg class="nav-icon" viewBox="0 0 24 24">
-                <path d="M4 20l4-1 10-10-3-3L5 16l-1 4z" stroke="currentColor" stroke-width="2" fill="none" />
-                <line x1="14" y1="5" x2="19" y2="10" stroke="currentColor" stroke-width="2" />
-            </svg>
-            <span>Reviews</span>
-        </a>
-        -->
         <a href="ProfilePage.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
                 <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none" />
@@ -101,16 +92,16 @@
                         : "No rating";
 
                     tile.innerHTML = `
-                                ${posterUrl
+                            ${posterUrl
                             ? `<img src="${posterUrl}" class="wl-poster" alt="${item.titleName}" title="${item.titleName}">`
                             : `<div class="wl-poster-placeholder">🎬</div>`
                         }
-                                <div class="wl-rating">${stars}</div>
-                                <div class="wl-buttons">
-                                    <button class="wl-btn wl-edit-btn" onclick="changeRating('${item.titleName.replace(/'/g, "\\'")}')">Edit</button>
-                                    <button class="wl-btn wl-delete-btn" onclick="deleteFilm('${item.titleName.replace(/'/g, "\\'")}')">Delete</button>
-                                </div>
-                            `;
+                            <div class="wl-rating">${stars}</div>
+                            <div class="wl-buttons">
+                                <button class="wl-btn wl-edit-btn" onclick="changeRating('${item.titleName.replace(/'/g, "\\'")}')">Edit</button>
+                                <button class="wl-btn wl-delete-btn" onclick="deleteFilm('${item.titleName.replace(/'/g, "\\'")}')">Delete</button>
+                            </div>
+                        `;
 
                     container.appendChild(tile);
                 });
@@ -129,10 +120,7 @@
                     { method: "DELETE" }
                 );
 
-                if (!response.ok) {
-                    throw new Error("Failed to delete movie");
-                }
-
+                if (!response.ok) throw new Error("Failed to delete movie");
                 loadWatchlist();
             } catch (error) {
                 console.error(error);
@@ -142,11 +130,9 @@
 
         async function changeRating(titleName) {
             const newRating = prompt("Enter new rating (1–10):");
-
             if (!newRating) return;
 
             const parsedRating = parseInt(newRating);
-
             if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 10) {
                 alert("Please enter a number between 1 and 10.");
                 return;
@@ -158,42 +144,12 @@
                     { method: "PUT" }
                 );
 
-                if (!response.ok) {
-                    throw new Error("Failed to update rating");
-                }
-
+                if (!response.ok) throw new Error("Failed to update rating");
                 loadWatchlist();
             } catch (error) {
                 console.error(error);
                 alert("Could not update rating.");
             }
-        }
-
-        function addFilm() {
-            const titleName = prompt("Enter movie title:");
-            if (!titleName) return;
-
-            const rating = prompt("Enter rating (1–10):");
-            const parsedRating = parseInt(rating);
-
-            if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 10) {
-                alert("Please enter a number between 1 and 10.");
-                return;
-            }
-
-            fetch(
-                `/watchlist/add?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(titleName)}&rating=${parsedRating}`,
-                { method: "POST" }
-            )
-                .then(response => {
-                    if (!response.ok) throw new Error("Failed to add movie");
-                    return response.json();
-                })
-                .then(() => loadWatchlist())
-                .catch(error => {
-                    console.error(error);
-                    alert("Could not add movie.");
-                });
         }
 
         loadWatchlist();
