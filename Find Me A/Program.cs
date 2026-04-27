@@ -172,7 +172,7 @@ app.MapGet("/details", async (string title) =>
             sb.Append($"<p>IMDb: <a href=\"{imdbUrl}\" target=\"_blank\">{System.Net.WebUtility.HtmlEncode(t.ImdbId)}</a></p>");
         }
         if (t.Genres != null && t.Genres.Any()) sb.Append($"<p>Genres: {System.Net.WebUtility.HtmlEncode(string.Join(", ", t.Genres))}</p>");
-        if (t.Actors != null && t.Actors.Any()) sb.Append($"<p>Actors: {System.Net.WebUtility.HtmlEncode(string.Join(", ", t.Actors.Take(10)))}...</p>");
+        if (t.Actors != null && t.Actors.Any()) sb.Append($"<p>Actors: {System.Net.WebUtility.HtmlEncode(string.Join(", ", t.Actors.Take(15)))}...</p>");
     }
     else
     {
@@ -341,7 +341,7 @@ app.MapGet("/featured", async (HttpContext ctx) =>
         // Strategy: cycle through ranked genres first (one TMDB page each),
         // then loop back through them on subsequent TMDB pages.
         var watchedTitleNames = watched.Select(w => w.TitleName.ToLower()).ToHashSet();
-        const int pageSize = 10;
+        const int pageSize = 15;
 
         // We query TMDB and collect enough non-excluded, non-watched results.
         // Try up to 3 TMDB pages per genre before moving to the next genre.
@@ -429,7 +429,7 @@ app.MapGet("/top-picks", async (HttpContext ctx) =>
             .ToList();
 
         var watchedTitleNames = watched.Select(w => w.TitleName.ToLower()).ToHashSet();
-        const int pageSize = 10;
+        const int pageSize = 15;
 
         var results = new List<object>();
 
@@ -537,7 +537,7 @@ app.MapGet("/trending", async () =>
     var movies = data.RootElement
         .GetProperty("results")
         .EnumerateArray()
-        .Take(10)
+        .Take(15)
         .Select(movie => new
         {
             id = movie.GetProperty("id").GetInt32(),
