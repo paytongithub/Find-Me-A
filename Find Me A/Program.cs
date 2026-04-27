@@ -60,11 +60,13 @@ app.MapGet("/search", async (string query) =>
 
     //known genres you want to support
     string[] knownGenres =
-    {
-        "Action", "Comedy", "Horror", "Romance",
-        "Animation", "Science Fiction", "Sci-Fi",
-        "Anime", "Rom-Com"
-    };
+{
+    "Action", "Comedy", "Horror", "Romance",
+    "Animation", "Science Fiction", 
+    "Rom-Com", "Fantasy", "Adventure", "Drama",
+    "Thriller", "Mystery","Western", "Crime",
+    "Documentary", "Musical"
+};
 
     //Genre search branch
     if (knownGenres.Contains(query, StringComparer.OrdinalIgnoreCase))
