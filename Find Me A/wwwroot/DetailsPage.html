@@ -1,13 +1,12 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
-   <meta charset="utf-8" />
-   <title>Find Me A – Details</title>
-   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-   <link rel="stylesheet" href="css/Theme.css">
-   <link rel="stylesheet" href="css/DetailsPage.css">
+    <meta charset="utf-8" />
+    <title>Find Me A – Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/Theme.css">
+    <link rel="stylesheet" href="css/DetailsPage.css">
 </head>
-
 
 <body class="dt-body">
 
@@ -160,13 +159,33 @@
 
             document.querySelector(".dt-watchlist-icon-btn").onclick = async () => {
                 const username = localStorage.getItem("username");
-                const rating = prompt("Enter rating 1-10:");
+                if (!username) {
+                    alert("You must be logged in to add to watchlist.");
+                    return;
+                }
 
-                await fetch(`/watchlist/add?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(data.titleName)}&rating=${encodeURIComponent(rating || 0)}`, {
+                const ratingInput = prompt("Enter rating 1-10 (or leave blank):");
+                let rating = 0;
+                if (ratingInput !== null && ratingInput.trim() !== "") {
+                    const parsed = Number.parseInt(ratingInput.trim(), 10);
+                    if (!Number.isInteger(parsed) || parsed < 1 || parsed > 10) {
+                        alert("Rating must be a whole number from 1 to 10.");
+                        return;
+                    }
+                    rating = parsed;
+                }
+
+                const response = await fetch(`/watchlist/add?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(data.titleName)}&rating=${encodeURIComponent(rating)}&mediaType=${encodeURIComponent(type)}&tmdbId=${encodeURIComponent(id)}`, {
                     method: "POST"
                 });
 
-                alert("Added to watchlist!");
+                const payload = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    alert(payload.error || "Failed to add to watchlist.");
+                    return;
+                }
+
+                alert(payload.message || "Added to watchlist!");
             };
         }
 
