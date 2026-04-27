@@ -1,98 +1,171 @@
-﻿/* Welcome Page Styling */
-.welcome-body {
+﻿/* Base */
+.wl-body {
     background-color: #3f3937;
     color: white;
     font-family: Arial, sans-serif;
     margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    padding-bottom: 80px;
 }
 
-.welcome-container {
-    text-align: center;
+
+/* Header */
+.wl-header {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   position:relative;
+   padding: 20px 24px;
+   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Logo Circle */
-.welcome-logo-circle {
-    width: 160px;
-    height: 160px;
-    border-radius: 50%;
-    border: 3px solid gold;
-    margin: 0 auto 20px auto;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
 
-.logo-inner {
+.header-logo img {
     width: 90px;
-    height: 90px;
-    background-color: #1a1a1a;
-    border-radius: 50%;
+}
+.header-logo {
+    margin-bottom: 10px;
+}
+
+
+/* Sections */
+.wl-section {
+    margin: 20px;
+}
+
+
+.wl-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    font-weight: 600;;
+}
+
+
+.wl-add-wrapper {
     display: flex;
     justify-content: center;
-    align-items: center;
+    margin: 20px 0 30px;
+}
+.wl-add-btn {
+    background: #c87575;
+    border: none;
+    color: #fff8ef;
+    padding: 14px 40px;
+    border-radius: 999px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
-.logo-icon {
-    font-size: 40px;
-    color: gold;
-}
 
-.logo-text {
-    position: absolute;
-    bottom: -28px;
-    width: 100%;
-    text-align: center;
-    font-size: 16px;
-    color: gold;
-    letter-spacing: 2px;
+.wl-add-btn:hover {
+    background: #d98b8b;
 }
-
-/* Tagline */
-.welcome-tagline {
-    margin-top: 50px;
-    font-size: 20px;
-    color: #ffb6c1;
-    margin-bottom: 40px;
-}
-
-/* Buttons */
-.welcome-buttons {
+.wl-main {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    align-items: center;
+    gap: 24px;
+    padding: 20px;
 }
 
-.welcome-btn {
-    padding: 12px 20px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 18px;
-    display: block;
-    width: 240px;
-    margin: 0 auto;
-    text-align: center;
-    font-weight: bold;
+
+.wl-card{
+    display: flex;
+    gap: 20px;
+    width: 80%;
+    max-width: 700px;
+    background: #4a4341;
+    padding: 20px;
+    border-radius: 20px;
 }
 
-.gold-btn {
-    background-color: gold;
-    color: black;
+
+.wl-card-left{
+    flex-shrink: 0;
 }
 
-.black-btn {
-    background-color: black;
-    color: white;
-    border: 2px solid gold;
+
+.wl-card-right{
+    flex: 1;
 }
 
-.guest-link {
-    margin-top: 10px;
-    color: #ffb6c1;
-    text-decoration: none;
-    font-size: 16px;
+
+.wl-movie-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: gold;
+}
+
+
+.wl-chip{
+    background: #5a514e;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+
+
+
+.section-title, .wl-title {
+    font-weight: 700;
+}
+.wl-add-wrapper{
+    margin-bottom: 10px;
+}
+
+
+.wl-rating{
+    margin-top: 12px;
+}
+.wl-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+
+.wl-edit-btn {
+    background: #5a514e;
+    color: #fff8ef;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+
+.wl-edit-btn:hover {
+    background: #6a605c;
+}
+
+
+
+
+.wl-delete-btn {
+    background: #c87575;
+    color: #fff8ef;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+
+.wl-delete-btn:hover {
+    background: #d98b8b;
+}
+
+
+.wl-edit-btn:active,
+.wl-delete-btn:active {
+    transform: scale(0.95);
 }
