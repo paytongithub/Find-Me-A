@@ -4,177 +4,123 @@
     <meta charset="utf-8" />
     <title>Find Me A – Watchlist</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="Theme.css">
-    <link rel="stylesheet" href="WatchlistPage.css">
+    <link rel="stylesheet" href="css/Theme.css">
+    <link rel="stylesheet" href="css/WatchlistPage.css">
 </head>
-
 
 <body class="wl-body">
 
-
     <header class="wl-header">
+        <h1>My Watchlist</h1>
         <div class="header-logo">
             <img src="logo.png" alt="Find Me A">
         </div>
     </header>
 
-
     <div class="wl-add-wrapper">
-        <button class="wl-add-btn" onclick="addFilm()">Add Film</button>
+        <button class="wl-add-btn" onclick="window.location.href='./SearchPage.html'">+ Add Film</button>
     </div>
 
-
     <main class="wl-main" id="seen-list">
-        <!-- Items loaded from backend -->
+        <!-- Tiles loaded from backend -->
     </main>
-
 
     <nav class="bottom-nav">
         <a href="index.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
-            <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" fill="none"/>
-            <path d="M5 10v10h14V10" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" fill="none" />
+                <path d="M5 10v10h14V10" stroke="currentColor" stroke-width="2" fill="none" />
             </svg>
             <span>Home</span>
         </a>
         <a href="SearchPage.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
-            <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2"/>
+                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none" />
+                <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" />
             </svg>
             <span>Search</span>
         </a>
         <a href="WatchlistPage.html" class="active">
             <svg class="nav-icon" viewBox="0 0 24 24">
-                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke="currentColor" stroke-width="2" fill="none" />
             </svg>
             <span>Watchlist</span>
         </a>
-        <a href="ReviewPage.html">
-            <svg class="nav-icon" viewBox="0 0 24 24">
-                <path d="M4 20l4-1 10-10-3-3L5 16l-1 4z" stroke="currentColor" stroke-width="2" fill="none"/>
-                <line x1="14" y1="5" x2="19" y2="10" stroke="currentColor" stroke-width="2"/>
-            </svg>
-            <span>Reviews</span>
-        </a>
         <a href="ProfilePage.html">
             <svg class="nav-icon" viewBox="0 0 24 24">
-                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
-                <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" fill="none"/>
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none" />
+                <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" fill="none" />
             </svg>
             <span>Profile</span>
         </a>
     </nav>
 
-
     <script>
         const username = localStorage.getItem("username");
-
 
         if (!username) {
             window.location.href = "LoginPage.html";
         }
 
-
         async function loadWatchlist() {
             try {
                 const response = await fetch(`/watchlist?username=${encodeURIComponent(username)}`);
-
 
                 if (!response.ok) {
                     throw new Error("Failed to load watchlist");
                 }
 
-
                 const data = await response.json();
                 const container = document.getElementById("seen-list");
                 container.innerHTML = "";
 
-
                 if (!data || data.length === 0) {
-                    container.innerHTML = "<p>No watched movies yet.</p>";
+                    container.innerHTML = "<div class='empty-message'>No watched movies yet.</div>";
                     return;
                 }
 
-
                 data.forEach(item => {
-                    const card = document.createElement("div");
-                    card.className = "wl-card";
-
+                    const tile = document.createElement("div");
+                    tile.className = "wl-tile";
 
                     const posterUrl = item.poster
                         ? `https://image.tmdb.org/t/p/w200${item.poster}`
                         : "";
 
-
                     const stars = item.userRating
                         ? "★".repeat(item.userRating) + "☆".repeat(10 - item.userRating)
-                        : "No rating yet";
+                        : "No rating";
 
-
-                    card.innerHTML = `
-                        <div class="wl-card-left">
-                            ${
-                                posterUrl
-                                    ? `<img src="${posterUrl}" class="wl-poster" alt="${item.titleName}">`
-                                    : `<div class="wl-poster-placeholder">🎬</div>`
-                            }
-                        </div>
-
-
-                        <div class="wl-card-right">
-                            <h2 class="wl-movie-title">${item.titleName}</h2>
-
-
-                            <div class="wl-meta-row">
-                                ${(item.genres && item.genres.length)
-                                    ? item.genres.map(g => `<span class="wl-chip">${g}</span>`).join("")
-                                    : `<span class="wl-chip">No Genre</span>`
-                                }
+                    tile.innerHTML = `
+                            ${posterUrl
+                            ? `<img src="${posterUrl}" class="wl-poster" alt="${item.titleName}" title="${item.titleName}">`
+                            : `<div class="wl-poster-placeholder">🎬</div>`
+                        }
+                            <div class="wl-rating">${stars}</div>
+                            <div class="wl-buttons">
+                                <button class="wl-btn wl-edit-btn" onclick="changeRating('${item.titleName.replace(/'/g, "\\'")}')">Edit</button>
+                                <button class="wl-btn wl-delete-btn" onclick="deleteFilm('${item.titleName.replace(/'/g, "\\'")}')">Delete</button>
                             </div>
+                        `;
 
-
-                            <div class="wl-rating">
-                                <strong>Your Rating:</strong> ${stars}
-                            </div>
-
-
-                            <div class="wl-overview-box">
-                                <p><strong>Actors:</strong> ${(item.actors && item.actors.length) ? item.actors.slice(0, 5).join(", ") : "None"}</p>
-                                <p><strong>Watched:</strong> ${item.watchedDate ?? "Unknown"}</p>
-                            </div>
-
-
-                            <div class="wl-actions">
-                                <button class="wl-edit-btn" onclick="changeRating('${item.titleName.replace(/'/g, "\\'")}')">Edit Rating</button>
-                                <button class="wl-delete-btn" onclick="deleteFilm('${item.titleName.replace(/'/g, "\\'")}')">Delete</button>
-                            </div>
-                        </div>
-                    `;
-
-
-                    container.appendChild(card);
+                    container.appendChild(tile);
                 });
             } catch (error) {
-                document.getElementById("seen-list").innerHTML = "<p>Error loading watchlist.</p>";
+                document.getElementById("seen-list").innerHTML = "<div class='empty-message'>Error loading watchlist.</div>";
                 console.error(error);
             }
         }
 
-
         async function deleteFilm(titleName) {
+            if (!confirm(`Delete "${titleName}" from watchlist?`)) return;
+
             try {
                 const response = await fetch(
                     `/watchlist/remove?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(titleName)}`,
                     { method: "DELETE" }
                 );
 
-
-                if (!response.ok) {
-                    throw new Error("Failed to delete movie");
-                }
-
-
+                if (!response.ok) throw new Error("Failed to delete movie");
                 loadWatchlist();
             } catch (error) {
                 console.error(error);
@@ -182,22 +128,15 @@
             }
         }
 
-
         async function changeRating(titleName) {
             const newRating = prompt("Enter new rating (1–10):");
-
-
             if (!newRating) return;
 
-
             const parsedRating = parseInt(newRating);
-
-
             if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 10) {
                 alert("Please enter a number between 1 and 10.");
                 return;
             }
-
 
             try {
                 const response = await fetch(
@@ -205,12 +144,7 @@
                     { method: "PUT" }
                 );
 
-
-                if (!response.ok) {
-                    throw new Error("Failed to update rating");
-                }
-
-
+                if (!response.ok) throw new Error("Failed to update rating");
                 loadWatchlist();
             } catch (error) {
                 console.error(error);
@@ -218,41 +152,8 @@
             }
         }
 
-
-        function addFilm() {
-            const titleName = prompt("Enter movie title:");
-            if (!titleName) return;
-
-
-            const rating = prompt("Enter rating (1–10):");
-            const parsedRating = parseInt(rating);
-
-
-            if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 10) {
-                alert("Please enter a number between 1 and 10.");
-                return;
-            }
-
-
-            fetch(
-                `/watchlist/add?username=${encodeURIComponent(username)}&movieTitle=${encodeURIComponent(titleName)}&rating=${parsedRating}`,
-                { method: "POST" }
-            )
-            .then(response => {
-                if (!response.ok) throw new Error("Failed to add movie");
-                return response.json();
-            })
-            .then(() => loadWatchlist())
-            .catch(error => {
-                console.error(error);
-                alert("Could not add movie.");
-            });
-        }
-
-
         loadWatchlist();
     </script>
-
 
 </body>
 </html>

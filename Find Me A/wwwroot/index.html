@@ -1,191 +1,276 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8" />
     <title>Find Me A – Home</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="Theme.css">
-    <link rel="stylesheet" href="HomePage.css">
+    <link rel="stylesheet" href="css/Theme.css">
+    <link rel="stylesheet" href="css/HomePage.css">
 </head>
 
-<body>
-    <div class="page-shell">
-    <!-- Header -->
-        <header class="header">
-            <div class="logo">
-                <img src="logo.png" alt="Find Me A">
-            </div>
-            <div class="header-right">
-                <p class="welcome">Welcome, User</p>
-            </div>
-        </header>
+<body class="hp-body">
 
-        <section class="random-cta">
+    <header class="hp-header">
+        <h1>Home</h1>
+        <div class="header-logo">
+            <img src="logo.png" alt="Find Me A">
+        </div>
+        <span class="header-welcome" id="headerWelcome"></span>
+    </header>
+
+    <main class="hp-main">
+
+        <section class="random-cta-button">
             <a href="RandomGeneratorPage.html" class="random-cta-btn">Don't Know What to Watch?</a>
         </section>
 
-        <section class="section">
-            <h2 class="section-title">Featured For You</h2>
+        <section class="hp-section">
+            <h2 class="hp-section-title">Picks From Your Favorite Genres</h2>
             <div class="carousel-wrap">
-                <button class="carousel-arrow left">&#x2B9C;</button>
+                <button class="carousel-arrow left" onclick="carouselLeft('featured')">&#x2B9C;</button>
                 <div id="featuredContainer" class="carousel"></div>
-                <button class="carousel-arrow right">&#11166;</button>
+                <button class="carousel-arrow right" onclick="carouselRight('featured')">&#11166;</button>
             </div>
         </section>
 
-        <section class="section">
-            <h2 class="section-title">Top Picks For You</h2>
+        <section class="hp-section">
+            <h2 class="hp-section-title">Picks From Your Favorite Actors</h2>
             <div class="carousel-wrap">
-                <button class="carousel-arrow left">&#x2B9C;</button>
+                <button class="carousel-arrow left" onclick="carouselLeft('topPicks')">&#x2B9C;</button>
                 <div id="topPicksContainer" class="carousel"></div>
-                <button class="carousel-arrow right">&#11166;</button>
+                <button class="carousel-arrow right" onclick="carouselRight('topPicks')">&#11166;</button>
             </div>
         </section>
 
-        <section class="section">
-            <h2 class="section-title">Trending Now</h2>
+        <section class="hp-section">
+            <h2 class="hp-section-title">Trending Now</h2>
             <div class="carousel-wrap">
-                <button class="carousel-arrow left">&#x2B9C;</button>
+                <button class="carousel-arrow left" onclick="scrollCarousel('trendingContainer', -300)">&#x2B9C;</button>
                 <div id="trendingContainer" class="carousel"></div>
-                <button class="carousel-arrow right">&#11166;</button>
+                <button class="carousel-arrow right" onclick="scrollCarousel('trendingContainer',  300)">&#11166;</button>
             </div>
         </section>
 
+    </main>
 
-        <!-- Bottom Navigation -->
-        <nav class="bottom-nav">
-            <a href="index.html" class="active">
-                <svg class="nav-icon" viewBox="0 0 24 24">
-                <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" fill="none"/>
-                <path d="M5 10v10h14V10" stroke="currentColor" stroke-width="2" fill="none"/>
-                </svg>
-                <span>Home</span>
-            </a>
-            <a href="SearchPage.html">
-              <svg class="nav-icon" viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"/>
-                <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                <span>Search</span>
-            </a>
-            <a href="WatchlistPage.html">
-                <svg class="nav-icon" viewBox="0 0 24 24">
-                    <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke="currentColor" stroke-width="2" fill="none"/>
-                </svg>
-                <span>Watchlist</span>
-            </a>
-            <a href="ReviewPage.html">
-                <svg class="nav-icon" viewBox="0 0 24 24">
-                    <path d="M4 20l4-1 10-10-3-3L5 16l-1 4z" stroke="currentColor" stroke-width="2" fill="none"/>
-                    <line x1="14" y1="5" x2="19" y2="10" stroke="currentColor" stroke-width="2"/>
-                </svg>
-                <span>Reviews</span>
-            </a>
-            <a href="ProfilePage.html">
-                <svg class="nav-icon" viewBox="0 0 24 24">
-                    <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
-                    <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" fill="none"/>
-                </svg>
-                <span>Profile</span>
-            </a>
-        </nav>
-        <script>
-            const username = localStorage.getItem("username");
+    <nav class="bottom-nav">
+        <a href="index.html" class="active">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path d="M3 10.5L12 3l9 7.5" stroke="currentColor" stroke-width="2" fill="none" />
+                <path d="M5 10v10h14V10" stroke="currentColor" stroke-width="2" fill="none" />
+            </svg>
+            <span>Home</span>
+        </a>
+        <a href="SearchPage.html">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none" />
+                <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="2" />
+            </svg>
+            <span>Search</span>
+        </a>
+        <a href="WatchlistPage.html">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" stroke="currentColor" stroke-width="2" fill="none" />
+            </svg>
+            <span>Watchlist</span>
+        </a>
+        <a href="ProfilePage.html">
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2" fill="none" />
+                <path d="M4 20c0-4 4-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="2" fill="none" />
+            </svg>
+            <span>Profile</span>
+        </a>
+    </nav>
 
-            const featuredContainer = document.getElementById("featuredContainer");
-            const topPicksContainer = document.getElementById("topPicksContainer");
-            const trendingContainer = document.getElementById("trendingContainer");
+    <script>
+        // ─── Constants ────────────────────────────────────────────────────────
+        const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+        const username = localStorage.getItem("username");
 
-            const welcomeText = document.querySelector(".welcome");
+        if (username) {
+            document.getElementById("headerWelcome").textContent = `Welcome, ${username}`;
+        }
 
-            const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+        // ─── Carousel state ───────────────────────────────────────────────────
+        // Each recommendation carousel tracks:
+        //   page       – next page index to request from the server
+        //   seenIds    – Set of TMDB IDs already shown (used in ?exclude= param)
+        //   loading    – prevents duplicate in-flight requests
+        //   exhausted  – no more server pages available
+        const carouselState = {
+            featured: {
+                containerId: "featuredContainer",
+                endpoint: "/featured",
+                page: 0,
+                seenIds: new Set(),
+                loading: false,
+                exhausted: false,
+            },
+            topPicks: {
+                containerId: "topPicksContainer",
+                endpoint: "/top-picks",
+                page: 0,
+                seenIds: new Set(),
+                loading: false,
+                exhausted: false,
+            },
+        };
 
-            if (welcomeText && username) {
-                welcomeText.textContent = `Welcome, ${username}`;
-            }
+        // ─── Movie card factory ───────────────────────────────────────────────
+        function createMovieCard(movie) {
+            const card = document.createElement("div");
+            card.className = "movie-card";
 
-            function createMovieCard(movie) {
-                const card = document.createElement("div");
-                card.className = "movie-card";
-                const titleName = movie.title ?? movie.name ?? movie.titleName;
-                card.addEventListener("click", () => {
-                    if (!movie.id || !movie.mediaType) {
-                        console.log("Missing movie data:", movie);
-                        alert("This item is missing an ID.");
-                        return;
-                    }
+            card.addEventListener("click", () => {
+                if (!movie.id || !movie.mediaType) {
+                    alert("This item is missing an ID.");
+                    return;
+                }
+                window.location.href = `DetailsPage.html?id=${movie.id}&type=${movie.mediaType}`;
+            });
 
-                    window.location.href =
-                        `DetailsPage.html?id=${movie.id}&type=${movie.mediaType}`;
-                });
+            const posterUrl = movie.poster ? `${IMAGE_BASE_URL}${movie.poster}` : "";
 
-                const posterUrl = movie.poster
-                    ? `${IMAGE_BASE_URL}${movie.poster}`
-                    : "";
-
-
-                card.innerHTML = `
+            card.innerHTML = `
                     <div class="poster-card">
-                        ${
-                            posterUrl
-                                ? `<img src="${posterUrl}" alt="${movie.title}" class="poster">`
-                                : `<div class="poster placeholder">No Image</div>`
-                        }
+                        ${posterUrl
+                    ? `<img src="${posterUrl}" alt="${movie.title}" class="poster">`
+                    : `<div class="poster placeholder">No Image</div>`
+                }
                         <h3>${movie.title ?? "Untitled"}</h3>
-                        <p>⭐ ${movie.rating ?? "N/A"}</p>
+                        <p>&#11088; ${movie.rating != null ? Number(movie.rating).toFixed(1) : "N/A"}</p>
                     </div>
                 `;
 
-                return card;
-            }
+            return card;
+        }
 
-            document.querySelectorAll(".carousel-wrap").forEach(wrap => {
-                const carousel = wrap.querySelector(".carousel");
-                const leftBtn = wrap.querySelector(".left");
-                const rightBtn = wrap.querySelector(".right");
+        // ─── Fetch one page from a recommendation endpoint ────────────────────
+        // Returns the array of new movies (may be empty if exhausted).
+        async function fetchRecommendationPage(key) {
+            const state = carouselState[key];
+            if (state.loading || state.exhausted || !username) return [];
 
-                leftBtn.addEventListener("click", () => {
-                    carousel.scrollBy({ left: -300, behavior: "smooth" });
-                });
+            state.loading = true;
 
-                rightBtn.addEventListener("click", () => {
-                    carousel.scrollBy({ left: 300, behavior: "smooth" });
-                });
-            });
+            try {
+                const excludeParam = [...state.seenIds].join(",");
+                const url = `${state.endpoint}?username=${encodeURIComponent(username)}`
+                    + `&page=${state.page}`
+                    + (excludeParam ? `&exclude=${encodeURIComponent(excludeParam)}` : "");
 
-            async function loadSection(url, container) {
-                try {
-                    const response = await fetch(url);
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Server error: ${response.status}`);
 
-                    if (!response.ok) {
-                        throw new Error(`Failed to load ${url}`);
+                const movies = await response.json();
+
+                if (!movies || movies.length === 0) {
+                    // Try a couple more pages before giving up, in case a TMDB page
+                    // was entirely filtered out by the watched/exclude lists.
+                    state.page++;
+                    if (state.page > 20) {          // hard cap to avoid infinite loops
+                        state.exhausted = true;
                     }
-
-                    const movies = await response.json();
-                    container.innerHTML = "";
-
-                    if (!movies || movies.length === 0) {
-                        container.innerHTML = "<p>No movies found.</p>";
-                        return;
-                    }
-
-                    movies.forEach(movie => {
-                        container.appendChild(createMovieCard(movie));
-                    });
-                } catch (error) {
-                    container.innerHTML = "<p>Error loading section.</p>";
-                    console.error(error);
+                    return [];
                 }
+
+                // Register new IDs so subsequent pages exclude them
+                movies.forEach(m => state.seenIds.add(m.id));
+                state.page++;
+                return movies;
+
+            } catch (err) {
+                console.error(`[${key}] fetch failed:`, err);
+                return [];
+            } finally {
+                state.loading = false;
             }
-            if (username) {
-                loadSection(`/featured?username=${encodeURIComponent(username)}`, featuredContainer);
-                loadSection(`/top-picks?username=${encodeURIComponent(username)}`, topPicksContainer);
-            } else {
-                featuredContainer.innerHTML = "<p>Log in to see personalized picks.</p>";
-                topPicksContainer.innerHTML = "<p>Log in to see personalized picks.</p>";
+        }
+
+        // ─── Append movies to a carousel container ────────────────────────────
+        function appendMovies(containerId, movies) {
+            const container = document.getElementById(containerId);
+            if (!movies || movies.length === 0) return;
+            movies.forEach(movie => container.appendChild(createMovieCard(movie)));
+        }
+
+        // ─── Initial load for recommendation carousels ────────────────────────
+        async function initRecommendationCarousel(key) {
+            const state = carouselState[key];
+            const container = document.getElementById(state.containerId);
+
+            if (!username) {
+                container.innerHTML = "<p>Log in to see personalized picks.</p>";
+                return;
             }
 
-            loadSection("/trending", trendingContainer);
-        </script>
-    </div>
+            container.innerHTML = "<p class='carousel-loading'>Loading…</p>";
+
+            const movies = await fetchRecommendationPage(key);
+
+            container.innerHTML = "";
+
+            if (movies.length === 0) {
+                container.innerHTML = "<p>No recommendations yet – start rating titles!</p>";
+            } else {
+                appendMovies(state.containerId, movies);
+            }
+        }
+
+        // ─── Arrow handlers ───────────────────────────────────────────────────
+        // Left arrow: scroll left only — all cards are already in the DOM.
+        function carouselLeft(key) {
+            const containerId = carouselState[key].containerId;
+            document.getElementById(containerId).scrollBy({ left: -300, behavior: "smooth" });
+        }
+
+        // Right arrow: scroll right AND always fetch + append the next batch so
+        // the carousel grows unboundedly with each press.
+        // We kick off the fetch immediately (before the scroll animation finishes)
+        // so new cards are ready by the time the user wants to keep scrolling.
+        async function carouselRight(key) {
+            const state = carouselState[key];
+            const container = document.getElementById(state.containerId);
+
+            // Scroll immediately for instant feedback
+            container.scrollBy({ left: 300, behavior: "smooth" });
+
+            // Always load the next page (guard prevents duplicate in-flight requests)
+            if (!state.loading && !state.exhausted) {
+                const movies = await fetchRecommendationPage(key);
+                appendMovies(state.containerId, movies);
+            }
+        }
+
+        // ─── Trending carousel (simple, no pagination, scroll-only) ──────────
+        function scrollCarousel(id, amount) {
+            document.getElementById(id).scrollBy({ left: amount, behavior: "smooth" });
+        }
+
+        async function loadTrending() {
+            const container = document.getElementById("trendingContainer");
+            try {
+                const response = await fetch("/trending");
+                if (!response.ok) throw new Error("Failed to load trending");
+                const movies = await response.json();
+                container.innerHTML = "";
+                if (!movies || movies.length === 0) {
+                    container.innerHTML = "<p>No trending titles found.</p>";
+                    return;
+                }
+                movies.forEach(movie => container.appendChild(createMovieCard(movie)));
+            } catch (err) {
+                container.innerHTML = "<p>Error loading trending titles.</p>";
+                console.error(err);
+            }
+        }
+
+        // ─── Bootstrap ────────────────────────────────────────────────────────
+        initRecommendationCarousel("featured");
+        initRecommendationCarousel("topPicks");
+        loadTrending();
+    </script>
+
 </body>
 </html>
