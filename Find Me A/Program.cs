@@ -12,7 +12,6 @@ var app = builder.Build();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-
 string? connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION");
 app.MapGet("/login", async (HttpContext ctx) =>
 {
