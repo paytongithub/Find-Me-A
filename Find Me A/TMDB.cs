@@ -28,7 +28,7 @@ public class TMDB
    }
 
 
-   // Fetch a Title object (your project's Title model) from TMDB by name.
+   // Fetch a Title object from TMDB by name.
    // Returns null if no matching movie or TV show is found.
    public async Task<Title?> GetTitleByName(string titleName)
    {
