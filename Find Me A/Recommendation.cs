@@ -338,7 +338,7 @@ namespace Find_Me_A
                     }
                 }
 
-                double genreScore = titleRelevance > 0 ? (weightedScoreSum / titleRelevance) : 0.0;
+                double genreScore = titleRelevance > 0 ? (weightedScoreSum / titleRelevance) / entries.Count : 0.0;
 
                 profile.GenreData.Add(Tuple.Create(genreId, titleRelevance, genreScore));
             }
@@ -417,8 +417,7 @@ namespace Find_Me_A
                     }
                 }
 
-                double actorScore = titleRelevance > 0 ? (weightedScoreSum / titleRelevance) : 0.0;
-                actorScore = actorScore * titleRelevance;
+                double actorScore = titleRelevance > 0 ? (weightedScoreSum / titleRelevance) / entries.Count : 0.0;
                 profile.ActorData.Add(Tuple.Create(actorId, titleRelevance, actorScore));
             }
 
