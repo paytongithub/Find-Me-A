@@ -27,7 +27,6 @@ public class TMDB
        return response;
    }
 
-
    // Fetch a Title object from TMDB by name.
    // Returns null if no matching movie or TV show is found.
    public async Task<Title?> GetTitleByName(string titleName)
@@ -102,7 +101,6 @@ public class TMDB
                        title.ImdbId = iid.GetString();
                }
 
-
                // actors (top 5)
                title.Actors = new List<string>();
                if (cdoc.RootElement.TryGetProperty("cast", out var castArr))
@@ -113,17 +111,12 @@ public class TMDB
                        if (p.TryGetProperty("name", out var pname))
                        {
                            title.Actors.Add(pname.GetString() ?? string.Empty);
-                           //added++;
-                           //if (added >= 5) break;
                        }
                    }
                }
-
-
                return title;
            }
        }
-
 
        // Try TV search
        var tvSearchUrl = $"{baseUrl}/search/tv?api_key={apiKey}&query={encoded}";
@@ -169,7 +162,6 @@ public class TMDB
                    }
                }
 
-
                // poster, overview, external ids
                if (droot.TryGetProperty("poster_path", out var ppath) && ppath.ValueKind != JsonValueKind.Null)
                    title.PosterPath = ppath.GetString();
@@ -181,10 +173,7 @@ public class TMDB
                        title.ImdbId = iid.GetString();
                }
 
-
                string? trailerKey = null;
-
-
                if (droot.TryGetProperty("videos", out var vids) &&
                    vids.TryGetProperty("results", out var vidArr))
                {
@@ -201,7 +190,6 @@ public class TMDB
                    }
                }
 
-
                // actors (all returned by TMDB credits)
                title.Actors = new List<string>();
                if (cdoc.RootElement.TryGetProperty("cast", out var castArr))
@@ -212,18 +200,12 @@ public class TMDB
                        if (p.TryGetProperty("name", out var pname))
                        {
                            title.Actors.Add(pname.GetString() ?? string.Empty);
-                           // added++;
-                           // if (added >= 5) break;
                        }
                    }
                }
-
-
                return title;
            }
        }
-
-
        return null;
    }
 
@@ -288,11 +270,8 @@ public class TMDB
                return null;
            }
        }
-
-
        return null;
    }
-
 
    // Discover movies by actor names (comma-separated cast ids)
    public async Task<string> DiscoverByActor(string[] actorNames, int page = 1)
@@ -300,10 +279,8 @@ public class TMDB
        if (string.IsNullOrWhiteSpace(apiKey))
            throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
 
-
        if (actorNames == null || actorNames.Length == 0)
            return "{}";
-
 
        var ids = new List<int>();
        foreach (var name in actorNames)
@@ -327,7 +304,6 @@ public class TMDB
            }
        }
 
-
        if (ids.Count == 0)
            return "{}";
 
@@ -337,50 +313,43 @@ public class TMDB
        return discoverJson;
    }
 
+    // Discover movies genre names (maps names to ids then calls discover)
+    public async Task<string> DiscoverByGenre(string[] genreNames, int page = 1)
+    {
+        if (string.IsNullOrWhiteSpace(apiKey))
+            throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
 
-   // Discover movies genre names (maps names to ids then calls discover)
-   public async Task<string> DiscoverByGenre(string[] genreNames, int page = 1)
-   {
-       if (string.IsNullOrWhiteSpace(apiKey))
-           throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
+        if (genreNames == null || genreNames.Length == 0)
+            return "{}";
 
+        var genresUrl = $"{baseUrl}/genre/movie/list?api_key={apiKey}&language=en-US";
+        var genresJson = await client.GetStringAsync(genresUrl);
+        using var doc = JsonDocument.Parse(genresJson);
+        var root = doc.RootElement;
+        if (!root.TryGetProperty("genres", out var genres))
+            return "{}";
 
-       if (genreNames == null || genreNames.Length == 0)
-           return "{}";
+        var ids = new List<int>();
+        foreach (var target in genreNames)
+        {
+            foreach (var g in genres.EnumerateArray())
+            {
+                if (g.TryGetProperty("name", out var nameProp) &&
+                    string.Equals(nameProp.GetString(), target, StringComparison.OrdinalIgnoreCase))
+                {
+                    ids.Add(g.GetProperty("id").GetInt32());
+                    break;
+                }
+            }
+        }
 
+        if (ids.Count == 0)
+            return "{}";
 
-       var genresUrl = $"{baseUrl}/genre/movie/list?api_key={apiKey}&language=en-US";
-       var genresJson = await client.GetStringAsync(genresUrl);
-       using var doc = JsonDocument.Parse(genresJson);
-       var root = doc.RootElement;
-       if (!root.TryGetProperty("genres", out var genres))
-           return "{}";
-
-
-       var ids = new List<int>();
-       foreach (var target in genreNames)
-       {
-           foreach (var g in genres.EnumerateArray())
-           {
-               if (g.TryGetProperty("name", out var nameProp) &&
-                   string.Equals(nameProp.GetString(), target, StringComparison.OrdinalIgnoreCase))
-               {
-                   ids.Add(g.GetProperty("id").GetInt32());
-                   break;
-               }
-           }
-       }
-
-
-       if (ids.Count == 0)
-           return "{}";
-
-
-       var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={string.Join(',', ids)}&page={page}";
-       var discoverJson = await client.GetStringAsync(discoverUrl);
-       return discoverJson;
-   }
-
+        var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={string.Join(',', ids)}&page={page}";
+        var discoverJson = await client.GetStringAsync(discoverUrl);
+        return discoverJson;
+    }
 
    public async Task<string> GetPopularMovies()
    {
@@ -389,14 +358,12 @@ public class TMDB
        return response;
    }
 
-
    public async Task<string> GetTopRatedMovies()
    {
        var url = $"{baseUrl}/movie/top_rated?api_key={apiKey}";
        var response = await client.GetStringAsync(url);
        return response;
    }
-
 
    public async Task<string> GetTrendingMovies()
    {
@@ -405,14 +372,12 @@ public class TMDB
        return response;
    }
 
-
    public async Task<string> DiscoverMoviesByGenre(int genreId)
    {
        var url = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={genreId}&sort_by=popularity.desc";
        var response = await client.GetStringAsync(url);
        return response;
    }
-
 
    public async Task<string> DiscoverMoviesByActor(int actorId)
    {
@@ -421,19 +386,15 @@ public class TMDB
        return response;
    }
 
-
    public async Task<string?> GetPosterPathByTitleName(string titleName, string? mediaType = null)
    {
        if (string.IsNullOrWhiteSpace(apiKey))
            throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
 
-
        if (string.IsNullOrWhiteSpace(titleName))
            return null;
 
-
        var encoded = Uri.EscapeDataString(titleName);
-
 
        bool preferTv = string.Equals(mediaType, "tv", StringComparison.OrdinalIgnoreCase) ||
                        string.Equals(mediaType, "TV", StringComparison.OrdinalIgnoreCase);
@@ -454,7 +415,6 @@ public class TMDB
            return null;
        }
 
-
        if (preferTv)
        {
            var tvPoster = await SearchPoster("tv");
@@ -470,10 +430,8 @@ public class TMDB
            if (!string.IsNullOrWhiteSpace(tvPoster)) return tvPoster;
        }
 
-
        return null;
    }
-
 
    public async Task<string> SearchAll(string query)
    {
@@ -481,9 +439,6 @@ public class TMDB
        var url = $"{baseUrl}/search/multi?api_key={apiKey}&query={encodedQuery}";
        return await client.GetStringAsync(url);
    }
-
-
-
 
    public async Task<string> DiscoverRandom(
        string? type,
@@ -498,14 +453,12 @@ public class TMDB
 
        string mediaType = string.Equals(type, "tv", StringComparison.OrdinalIgnoreCase) ? "tv" : "movie";
 
-
        var query = new List<string>
        {
            $"api_key={apiKey}",
            "sort_by=popularity.desc",
            "watch_region=US"
        };
-
 
        var genreMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
        {
@@ -518,7 +471,6 @@ public class TMDB
            { "Animation", 16 }
        };
 
-
        var tvGenreMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
        {
            { "Action", 10759 },
@@ -530,7 +482,6 @@ public class TMDB
            { "Animation", 16 }
        };
 
-
        if (!string.IsNullOrWhiteSpace(genre) && genre != "All")
        {
            var map = mediaType == "tv" ? tvGenreMap : genreMap;
@@ -541,7 +492,6 @@ public class TMDB
                query.Add($"with_genres={genreId}");
            }
        }
-
 
        if (!string.IsNullOrWhiteSpace(year) && year != "All")
        {
@@ -569,7 +519,6 @@ public class TMDB
            }
        }
 
-
        var providerMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
        {
            { "Netflix", 8 },
@@ -578,7 +527,6 @@ public class TMDB
            { "Disney+", 337 }
        };
 
-
        if (!string.IsNullOrWhiteSpace(provider) && provider != "All")
        {
            if (providerMap.TryGetValue(provider, out int providerId))
@@ -586,7 +534,6 @@ public class TMDB
                query.Add($"with_watch_providers={providerId}");
            }
        }
-
 
        if (mediaType == "movie" &&
            !string.IsNullOrWhiteSpace(rating) &&
@@ -609,32 +556,24 @@ public class TMDB
 
        string mediaType = string.Equals(type, "tv", StringComparison.OrdinalIgnoreCase) ? "tv" : "movie";
 
-
        var detailsUrl = $"{baseUrl}/{mediaType}/{id}?api_key={apiKey}&language=en-US&append_to_response=external_ids,videos";
        var creditsUrl = $"{baseUrl}/{mediaType}/{id}/credits?api_key={apiKey}";
-
 
        var detailsJson = await client.GetStringAsync(detailsUrl);
        var creditsJson = await client.GetStringAsync(creditsUrl);
 
-
        using var ddoc = JsonDocument.Parse(detailsJson);
        using var cdoc = JsonDocument.Parse(creditsJson);
 
-
        var droot = ddoc.RootElement;
 
-
        var title = new Title();
-
 
        title.TitleName = mediaType == "movie"
            ? droot.GetProperty("title").GetString()
            : droot.GetProperty("name").GetString();
 
-
        title.TitleType = mediaType == "movie" ? "Movie" : "TV";
-
 
        if (droot.TryGetProperty("release_date", out var rel) ||
            droot.TryGetProperty("first_air_date", out rel))
@@ -643,11 +582,9 @@ public class TMDB
            title.ReleaseDate = rd;
        }
 
-
        title.AverageRating = droot.TryGetProperty("vote_average", out var va)
            ? Convert.ToDecimal(va.GetDouble())
            : 0;
-
 
        // genres
        title.Genres = new List<string>();
@@ -660,7 +597,6 @@ public class TMDB
            }
        }
 
-
        // poster
        if (droot.TryGetProperty("poster_path", out var ppath) &&
            ppath.ValueKind != JsonValueKind.Null)
@@ -668,13 +604,11 @@ public class TMDB
            title.PosterPath = ppath.GetString();
        }
 
-
        // overview
        if (droot.TryGetProperty("overview", out var over))
        {
            title.Overview = over.GetString();
        }
-
 
        // trailer
        if (droot.TryGetProperty("videos", out var vids) &&
@@ -692,7 +626,6 @@ public class TMDB
            }
        }
 
-
        // actors
        title.Actors = new List<string>();
        if (cdoc.RootElement.TryGetProperty("cast", out var castArr))
@@ -704,17 +637,13 @@ public class TMDB
            }
        }
 
-
        return title;
    }
-
-
    public async Task<string> GetPopularMoviesPaged(int page = 1)
    {
        var url = $"{baseUrl}/movie/popular?api_key={apiKey}&page={page}";
        return await client.GetStringAsync(url);
    }
-
 
    public async Task<string> GetTopRatedMoviesPaged(int page = 1)
    {
@@ -722,16 +651,13 @@ public class TMDB
        return await client.GetStringAsync(url);
    }
 
-
    public async Task<string> DiscoverByGenrePaged(string[] genreNames, int page = 1)
    {
        if (string.IsNullOrWhiteSpace(apiKey))
            throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
 
-
        if (genreNames == null || genreNames.Length == 0)
            return "{}";
-
 
        var genresUrl = $"{baseUrl}/genre/movie/list?api_key={apiKey}&language=en-US";
        var genresJson = await client.GetStringAsync(genresUrl);
@@ -739,7 +665,6 @@ public class TMDB
        var root = doc.RootElement;
        if (!root.TryGetProperty("genres", out var genres))
            return "{}";
-
 
        var ids = new List<int>();
        foreach (var target in genreNames)
@@ -755,25 +680,20 @@ public class TMDB
            }
        }
 
-
        if (ids.Count == 0)
            return "{}";
-
 
        var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={string.Join(',', ids)}&sort_by=popularity.desc&page={page}";
        return await client.GetStringAsync(discoverUrl);
    }
-
 
    public async Task<string> DiscoverByActorPaged(string[] actorNames, int page = 1)
    {
        if (string.IsNullOrWhiteSpace(apiKey))
            throw new InvalidOperationException("TMDB_API_KEY environment variable is not set.");
 
-
        if (actorNames == null || actorNames.Length == 0)
            return "{}";
-
 
        var ids = new List<int>();
        foreach (var name in actorNames)
@@ -786,7 +706,6 @@ public class TMDB
            if (!root.TryGetProperty("results", out var results))
                continue;
 
-
            foreach (var person in results.EnumerateArray())
            {
                if (person.TryGetProperty("id", out var idProp))
@@ -797,16 +716,12 @@ public class TMDB
            }
        }
 
-
        if (ids.Count == 0)
            return "{}";
-
 
        var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_cast={string.Join(',', ids)}&sort_by=popularity.desc&page={page}";
        return await client.GetStringAsync(discoverUrl);
    }
-
-
 }
 
 

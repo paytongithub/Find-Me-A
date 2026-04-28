@@ -78,155 +78,12 @@ namespace Find_Me_A
 
             return ExecuteTitleQuery(sql, new SqlParameter("@TitleName", titleName));
         }
-/* 
-        public List<Title> SearchByGenre(string genreName)
-        {
-            string sql = @"
-                SELECT DISTINCT
-                    t.TitleName,
-                    t.TitleType,
-                    t.ReleaseDate,
-                    t.Rating AS AverageRating,
-                    t.NumberOfRatings,
-                    ts.EpisodeCount,
-                    (SELECT STRING_AGG(g2.GenreName, ', ')
-                     FROM TitleGenres tg2
-                     JOIN Genres g2 ON tg2.GenreID = g2.GenreID
-                     WHERE tg2.TitleID = t.TitleID) AS Genres,
-                    (SELECT STRING_AGG(a2.ActorName, ', ')
-                     FROM TitleActors ta2
-                     JOIN Actors a2 ON ta2.ActorID = a2.ActorID
-                     WHERE ta2.TitleID = t.TitleID) AS Actors
-                FROM Titles t
-                LEFT JOIN TVShows ts ON t.TitleID = ts.TitleID
-                JOIN TitleGenres tg ON t.TitleID = tg.TitleID
-                JOIN Genres g ON tg.GenreID = g.GenreID
-                WHERE g.GenreName = @GenreName;";
-
-            return ExecuteTitleQuery(sql, new SqlParameter("@GenreName", genreName));
-        }
-
-        public List<Title> SearchByActor(string actorName)
-        {
-            string sql = @"
-                SELECT DISTINCT
-                    t.TitleName,
-                    t.TitleType,
-                    t.ReleaseDate,
-                    t.Rating AS AverageRating,
-                    t.NumberOfRatings,
-                    ts.EpisodeCount,
-                    (SELECT STRING_AGG(g2.GenreName, ', ')
-                     FROM TitleGenres tg2
-                     JOIN Genres g2 ON tg2.GenreID = g2.GenreID
-                     WHERE tg2.TitleID = t.TitleID) AS Genres,
-                    (SELECT STRING_AGG(a2.ActorName, ', ')
-                     FROM TitleActors ta2
-                     JOIN Actors a2 ON ta2.ActorID = a2.ActorID
-                     WHERE ta2.TitleID = t.TitleID) AS Actors
-                FROM Titles t
-                LEFT JOIN TVShows ts ON t.TitleID = ts.TitleID
-                JOIN TitleActors ta ON t.TitleID = ta.TitleID
-                JOIN Actors a ON ta.ActorID = a.ActorID
-                WHERE a.ActorName = @ActorName;";
-
-            return ExecuteTitleQuery(sql, new SqlParameter("@ActorName", actorName));
-        }
-
-        // overload method for multiple genres 
-        public List<Title> SearchByGenre(string[] genreNames)
-        {
-            if (genreNames == null || genreNames.Length == 0)
-                return new List<Title>();
-
-            var paramNames = new List<string>();
-            var parameters = new List<SqlParameter>();
-            for (int i = 0; i < genreNames.Length; i++)
-            {
-                string param = "@Genre" + i;
-                paramNames.Add(param);
-                parameters.Add(new SqlParameter(param, genreNames[i]));
-            }
-
-            string sql = $@"
-                SELECT DISTINCT
-                    t.TitleName,
-                    t.TitleType,
-                    t.ReleaseDate,
-                    t.Rating AS AverageRating,
-                    t.NumberOfRatings,
-                    ts.EpisodeCount,
-                    (SELECT STRING_AGG(g2.GenreName, ', ')
-                     FROM TitleGenres tg2
-                     JOIN Genres g2 ON tg2.GenreID = g2.GenreID
-                     WHERE tg2.TitleID = t.TitleID) AS Genres,
-                    (SELECT STRING_AGG(a2.ActorName, ', ')
-                     FROM TitleActors ta2
-                     JOIN Actors a2 ON ta2.ActorID = a2.ActorID
-                     WHERE ta2.TitleID = t.TitleID) AS Actors
-                FROM Titles t
-                LEFT JOIN TVShows ts ON t.TitleID = ts.TitleID
-                JOIN TitleGenres tg ON t.TitleID = tg.TitleID
-                JOIN Genres g ON tg.GenreID = g.GenreID
-                WHERE g.GenreName IN ({string.Join(", ", paramNames)});";
-
-            return ExecuteTitleQuery(sql, parameters.ToArray());
-        }
-        // overload method for multiple actors
-        public List<Title> SearchByActor(string[] actorNames)
-        {
-            if (actorNames == null || actorNames.Length == 0)
-                return new List<Title>();
-
-            var paramNames = new List<string>();
-            var parameters = new List<SqlParameter>();
-            for (int i = 0; i < actorNames.Length; i++)
-            {
-                string param = "@Actor" + i;
-                paramNames.Add(param);
-                parameters.Add(new SqlParameter(param, actorNames[i]));
-            }
-
-            string sql = $@"
-                SELECT DISTINCT
-                    t.TitleName,
-                    t.TitleType,
-                    t.ReleaseDate,
-                    t.Rating AS AverageRating,
-                    t.NumberOfRatings,
-                    ts.EpisodeCount,
-                    (SELECT STRING_AGG(g2.GenreName, ', ')
-                     FROM TitleGenres tg2
-                     JOIN Genres g2 ON tg2.GenreID = g2.GenreID
-                     WHERE tg2.TitleID = t.TitleID) AS Genres,
-                    (SELECT STRING_AGG(a2.ActorName, ', ')
-                     FROM TitleActors ta2
-                     JOIN Actors a2 ON ta2.ActorID = a2.ActorID
-                     WHERE ta2.TitleID = t.TitleID) AS Actors
-                FROM Titles t
-                LEFT JOIN TVShows ts ON t.TitleID = ts.TitleID
-                JOIN TitleActors ta ON t.TitleID = ta.TitleID
-                JOIN Actors a ON ta.ActorID = a.ActorID
-                WHERE a.ActorName IN ({string.Join(", ", paramNames)});";
-
-            return ExecuteTitleQuery(sql, parameters.ToArray());
-        }
-        */
         // switch for any of the methods
         //public object SearchQuery(string SearchBy, string Data)//
         public async Task<object> SearchQuery(string SearchBy, string[] Data)
         {
             switch (SearchBy)
             {
-                // unplugging searches from the database, as API is in now
-                /* 
-                case "Title":
-                    return SearchByTitle(Data);
-                case "Genre":
-                    return SearchByGenre(Data);
-                case "Actor":
-                    return SearchByActor(Data);
-                */
                 case "TMDB":
                     return await SearchFromTMDB((Data != null && Data.Length > 0) ? Data[0] : string.Empty);
                 case "TMDBTitle":
@@ -240,8 +97,6 @@ namespace Find_Me_A
                     var apiResults = await SearchFromTMDB((Data != null && Data.Length > 0) ? Data[0] : string.Empty);
                     return new { dbResults, apiResults };
                 default:
-                    //Console.WriteLine("Invalid search criteria.");
-                    //break;
                     return null;
             }
         }
