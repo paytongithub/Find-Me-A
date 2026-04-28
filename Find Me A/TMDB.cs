@@ -273,7 +273,7 @@ public class TMDB
        return null;
    }
 
-   // Discover movies by actor names (comma-separated cast ids)
+   // Discover movies and TV shows by actor names (comma-separated cast ids)
    public async Task<string> DiscoverByActor(string[] actorNames, int page = 1)
    {
        if (string.IsNullOrWhiteSpace(apiKey))
@@ -293,7 +293,6 @@ public class TMDB
            if (!root.TryGetProperty("results", out var results))
                continue;
 
-
            foreach (var p in results.EnumerateArray())
            {
                if (p.TryGetProperty("id", out var idProp))
@@ -307,13 +306,48 @@ public class TMDB
        if (ids.Count == 0)
            return "{}";
 
+       var castString = string.Join(',', ids);
 
-       var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_cast={string.Join(',', ids)}&page={page}";
-       var discoverJson = await client.GetStringAsync(discoverUrl);
-       return discoverJson;
+       // Get movies and TV shows
+       var movieUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_cast={castString}&page={page}";
+       var tvUrl = $"{baseUrl}/discover/tv?api_key={apiKey}&with_cast={castString}&page={page}";
+
+       var movieJson = await client.GetStringAsync(movieUrl);
+       var tvJson = await client.GetStringAsync(tvUrl);
+
+       // Combine results
+       using var movieDoc = JsonDocument.Parse(movieJson);
+       using var tvDoc = JsonDocument.Parse(tvJson);
+
+       var movieResults = movieDoc.RootElement.TryGetProperty("results", out var mr) 
+           ? mr.EnumerateArray().ToList() 
+           : new List<JsonElement>();
+       var tvResults = tvDoc.RootElement.TryGetProperty("results", out var tr) 
+           ? tr.EnumerateArray().ToList() 
+           : new List<JsonElement>();
+
+       var allResults = new List<JsonElement>();
+       allResults.AddRange(movieResults);
+       allResults.AddRange(tvResults);
+
+       // Sort by popularity
+       var sorted = allResults.OrderByDescending(x => 
+           x.TryGetProperty("popularity", out var p) ? p.GetDouble() : 0
+       ).ToList();
+
+       // Build combined JSON
+       var options = new JsonSerializerOptions { WriteIndented = false };
+       var combined = new
+       {
+           results = sorted.Select(x => System.Text.Json.JsonSerializer.Deserialize<object>(x.GetRawText())).ToList(),
+           total_results = allResults.Count,
+           total_pages = 1
+       };
+
+       return System.Text.Json.JsonSerializer.Serialize(combined, options);
    }
 
-    // Discover movies genre names (maps names to ids then calls discover)
+    // Discover movies and TV shows by genre names (maps names to ids then calls discover)
     public async Task<string> DiscoverByGenre(string[] genreNames, int page = 1)
     {
         if (string.IsNullOrWhiteSpace(apiKey))
@@ -322,33 +356,101 @@ public class TMDB
         if (genreNames == null || genreNames.Length == 0)
             return "{}";
 
-        var genresUrl = $"{baseUrl}/genre/movie/list?api_key={apiKey}&language=en-US";
-        var genresJson = await client.GetStringAsync(genresUrl);
-        using var doc = JsonDocument.Parse(genresJson);
-        var root = doc.RootElement;
-        if (!root.TryGetProperty("genres", out var genres))
-            return "{}";
+        // Get movie genres
+        var movieGenresUrl = $"{baseUrl}/genre/movie/list?api_key={apiKey}&language=en-US";
+        var movieGenresJson = await client.GetStringAsync(movieGenresUrl);
+        using var movieGenreDoc = JsonDocument.Parse(movieGenresJson);
+        var movieGenreRoot = movieGenreDoc.RootElement;
 
-        var ids = new List<int>();
-        foreach (var target in genreNames)
+        // Get TV genres
+        var tvGenresUrl = $"{baseUrl}/genre/tv/list?api_key={apiKey}&language=en-US";
+        var tvGenresJson = await client.GetStringAsync(tvGenresUrl);
+        using var tvGenreDoc = JsonDocument.Parse(tvGenresJson);
+        var tvGenreRoot = tvGenreDoc.RootElement;
+
+        var movieIds = new List<int>();
+        var tvIds = new List<int>();
+
+        // Map genre names to movie IDs
+        if (movieGenreRoot.TryGetProperty("genres", out var movieGenres))
         {
-            foreach (var g in genres.EnumerateArray())
+            foreach (var target in genreNames)
             {
-                if (g.TryGetProperty("name", out var nameProp) &&
-                    string.Equals(nameProp.GetString(), target, StringComparison.OrdinalIgnoreCase))
+                foreach (var g in movieGenres.EnumerateArray())
                 {
-                    ids.Add(g.GetProperty("id").GetInt32());
-                    break;
+                    if (g.TryGetProperty("name", out var nameProp) &&
+                        string.Equals(nameProp.GetString(), target, StringComparison.OrdinalIgnoreCase))
+                    {
+                        movieIds.Add(g.GetProperty("id").GetInt32());
+                        break;
+                    }
                 }
             }
         }
 
-        if (ids.Count == 0)
-            return "{}";
+        // Map genre names to TV IDs
+        if (tvGenreRoot.TryGetProperty("genres", out var tvGenres))
+        {
+            foreach (var target in genreNames)
+            {
+                foreach (var g in tvGenres.EnumerateArray())
+                {
+                    if (g.TryGetProperty("name", out var nameProp) &&
+                        string.Equals(nameProp.GetString(), target, StringComparison.OrdinalIgnoreCase))
+                    {
+                        tvIds.Add(g.GetProperty("id").GetInt32());
+                        break;
+                    }
+                }
+            }
+        }
 
-        var discoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={string.Join(',', ids)}&page={page}";
-        var discoverJson = await client.GetStringAsync(discoverUrl);
-        return discoverJson;
+        var movieResults = new List<JsonElement>();
+        var tvResults = new List<JsonElement>();
+
+        // Discover movies if we have genre IDs
+        if (movieIds.Count > 0)
+        {
+            var movieDiscoverUrl = $"{baseUrl}/discover/movie?api_key={apiKey}&with_genres={string.Join(',', movieIds)}&page={page}";
+            var movieDiscoverJson = await client.GetStringAsync(movieDiscoverUrl);
+            using var movieDiscoverDoc = JsonDocument.Parse(movieDiscoverJson);
+            if (movieDiscoverDoc.RootElement.TryGetProperty("results", out var mr))
+            {
+                movieResults = mr.EnumerateArray().ToList();
+            }
+        }
+
+        // Discover TV shows if we have genre IDs
+        if (tvIds.Count > 0)
+        {
+            var tvDiscoverUrl = $"{baseUrl}/discover/tv?api_key={apiKey}&with_genres={string.Join(',', tvIds)}&page={page}";
+            var tvDiscoverJson = await client.GetStringAsync(tvDiscoverUrl);
+            using var tvDiscoverDoc = JsonDocument.Parse(tvDiscoverJson);
+            if (tvDiscoverDoc.RootElement.TryGetProperty("results", out var tr))
+            {
+                tvResults = tr.EnumerateArray().ToList();
+            }
+        }
+
+        // Combine and sort by popularity
+        var allResults = new List<JsonElement>();
+        allResults.AddRange(movieResults);
+        allResults.AddRange(tvResults);
+
+        var sorted = allResults.OrderByDescending(x => 
+            x.TryGetProperty("popularity", out var p) ? p.GetDouble() : 0
+        ).ToList();
+
+        // Build combined JSON
+        var options = new JsonSerializerOptions { WriteIndented = false };
+        var combined = new
+        {
+            results = sorted.Select(x => System.Text.Json.JsonSerializer.Deserialize<object>(x.GetRawText())).ToList(),
+            total_results = allResults.Count,
+            total_pages = 1
+        };
+
+        return System.Text.Json.JsonSerializer.Serialize(combined, options);
     }
 
    public async Task<string> GetPopularMovies()
